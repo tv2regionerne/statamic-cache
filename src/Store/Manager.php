@@ -147,7 +147,6 @@ class Manager
     
     public function invalidateTags($tags)
     {           
-        dd($tags);
         Autocache::whereJsonContains('tags', $tags)
             ->get()
             ->map(function ($model) {
