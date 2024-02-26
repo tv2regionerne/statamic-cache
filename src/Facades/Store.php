@@ -3,7 +3,7 @@
 namespace Tv2regionerne\StatamicCache\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use Tv2regionerne\StatamicCache\Store\Resource;
+use Tv2regionerne\StatamicCache\Store\Manager;
 
 class Store extends Facade
 {
@@ -12,6 +12,6 @@ class Store extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return Resource::class;
+        return Manager::class;
     }
 }

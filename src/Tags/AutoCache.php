@@ -5,6 +5,7 @@ namespace Tv2regionerne\StatamicCache\Tags;
 use Statamic\Tags;
 use Statamic\View\State\CachesOutput;
 use Tv2regionerne\StatamicCache\Facades\Store;
+use Tv2regionerne\StatamicCache\Tags\Partial;
 
 class AutoCache extends Tags\Tags implements CachesOutput
 {
@@ -16,7 +17,7 @@ class AutoCache extends Tags\Tags implements CachesOutput
             return [];
         }
 
-        Tags\Partial::hook('before-render', function () {
+        Partial::hook('before-render', function () {
             $src = $this->params->get('src') ?? str_replace('partial:', '', $this->tag);
             
             // get depth of stack
@@ -38,21 +39,17 @@ class AutoCache extends Tags\Tags implements CachesOutput
             
             // this could probably be handled in a store?
             $parents = collect($this->context->get('autocache_parents', []))->push($key)->all();
-            $this->context->put('autocache_parents', $parents);            
+            $this->context = $this->context->put('autocache_parents', $parents);            
         });
         
-        Tags\Partial::hook('render', function ($html, $next) {
+        Partial::hook('render', function ($html, $next) {
             $html = $next($html);
             
             if ($key = $this->params->get('autocache_key')) {
                 $html = "<!-- {$key} -->\r\n".$html;
                 
                 Store::addToCache($key, $html);  
-            }
-            
-            if ($parents = $this->params->get('autocache_parents')) {
-                Store::addToCache(str_replace('autocache::partial:', 'autocache::parents:', $key), $parents);  
-            }            
+            }         
             
             return $html;
         });

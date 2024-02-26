@@ -7,12 +7,12 @@ use Tv2regionerne\StatamicCache\Facades\Store;
 
 class Partial extends BasePartial
 {
-    protected function render($partial)
+    public function render($partial)
     {
         if (! $this->shouldRender()) {
             return;
         }
-
+        
         if ($html = $this->runHooks('before-render')) {
             return $html;
         }
@@ -29,13 +29,11 @@ class Partial extends BasePartial
         $html = view($this->viewName($partial), $variables)
             ->withoutExtractions()
             ->render();
-
+            
         Store::removeWatcher($key);
 
-        Store::addKeyMapping($key);
+        Store::addKeyMappingData($key, ($this->context->get('autocache_parents') ?? []));
 
-        $this->runHooks('render', $html);
-
-        return $html;
+        return $this->runHooks('render', $html);
     }
 }

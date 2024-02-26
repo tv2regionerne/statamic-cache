@@ -2,7 +2,7 @@
 
 namespace Tv2regionerne\StatamicCache\Listeners;
 
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Cache\Events\KeyForgotten;
 use Statamic\Events\EntryBlueprintFound;
 use Statamic\Events\EntryDeleted;
 use Statamic\Events\EntrySaved;
@@ -20,48 +20,54 @@ class Subscriber
         EntrySaved::class => 'invalidateEntry',
         EntryDeleted::class => 'invalidateEntry',
         CuratedCollectionUpdatedEvent::class => 'invalidateCuratedCollections',
+        
+        KeyForgotten::class => 'removeAutocacheModels',
     ];
 
     public function subscribe($dispatcher): void
     {
+        $this->removeAutocacheModels('articles:461057e5-0b12-4f11-a335-958c04e16e3b');
+        
         foreach ($this->events as $event => $method) {
             if (class_exists($event)) {
-                $dispatcher->listen($event, self::class.'@'.$method);
+                $dispatcher->listen($event, [self::class, $method]);
             }
         }
+
     }
 
     public function registerEntry($event): void
     {
-        if ($event->entry) {
-            Store::mergeEntries($event->entry);
+        if (! $event->entry) {
+            return;
         }
+            
+        Store::mergeEntries($event->entry);
     }
 
     public function registerCollection($event): void
     {
-        $collection = $event->tag->params->get('from');
-        $tag = 'collection:'.$collection;
+        $tag = 'collection:'.$event->tag->params->get('from');
+
         Store::mergeTags($tag);
     }
 
     public function registerCuratedCollection($event): void
     {
-        $handle = $event->tag;
-        $tag = 'curated-collection:'.strtolower($handle);
+        $tag = 'curated-collection:'.strtolower($event->tag);
+
         Store::mergeTags($tag);
     }
 
     public function invalidateCuratedCollections(CuratedCollectionUpdatedEvent $event)
     {
-        $handle = $event->tag;
-        $tags = ['curated-collection:'.$handle];
-        Cache::tags($tags)->flush();
+        $tags = ['curated-collection:'.$event->tag];
+
+        Store::invalidateTags($tags);
     }
 
     public function invalidateEntry($event)
     {
-
         $entry = $event->entry;
 
         $collectionHandle = strtolower($entry->collection()->handle());
@@ -70,7 +76,12 @@ class Subscriber
             $collectionHandle.':'.$entry->id(),
             'collection:'.$collectionHandle,
         ];
-
-        Cache::tags($tags)->flush();
+        
+        Store::invalidateTags($tags);
+    }
+    
+    public function removeAutocacheModels($key)
+    {
+        Store::removeKeyMappingData($key);
     }
 }
