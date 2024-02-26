@@ -2,6 +2,7 @@
 
 namespace Tv2regionerne\StatamicCache\Tags;
 
+use Statamic\Facades\URL;
 use Statamic\Tags;
 use Statamic\View\State\CachesOutput;
 use Tv2regionerne\StatamicCache\Facades\Store;
@@ -29,7 +30,11 @@ class AutoCache extends Tags\Tags implements CachesOutput
                 $depth .= ':'.$count;
             }
             
-            $key = ($prefix = $this->params->get('prefix') ? $prefix.'__' : '').'autocache::partial:'.$depth.':'.str_replace('/', ':', $src);
+            $key = 'autocache::'.md5(URL::makeAbsolute(URL::getCurrent())).':'.$depth.':'.str_replace('/', '.', $src);
+            
+            if ($prefix = $this->params->get('prefix') ? $prefix.'__' : '') {
+                $key = $prefix.$key;
+            }
             
             if ($cache = Store::getFromCache($key)) {
                 return $cache;
