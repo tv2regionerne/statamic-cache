@@ -10,7 +10,7 @@ use Tv2regionerne\StatamicCache\Models\Autocache;
 class Manager
 {
     protected array $entries;
-    
+
     protected $store;
 
     protected array $tags = [];
@@ -98,22 +98,22 @@ class Manager
 
         return $this;
     }
-    
+
     public function cache()
     {
         return $this->store;
     }
-    
+
     public function getFromCache($key)
     {
         return $this->store->get($key);
     }
-    
+
     public function addToCache($key, $value)
     {
-        return $this->store->forever($key, $value); 
+        return $this->store->forever($key, $value);
     }
-    
+
     public function addKeyMappingData($key, $parents = [])
     {
         Autocache::updateOrCreate([
@@ -122,42 +122,42 @@ class Manager
         ], [
             'tags' => $this->cacheTags($key),
             'parents' => collect($parents)->filter(fn ($value) => $value != $key)->all(),
-        ]); 
-                
+        ]);
+
         return $this;
     }
-    
+
     public function removeKeyMappingData($tag)
-    {           
+    {
         Autocache::whereJsonContains('tags', [$tag])
             ->get()
             ->map(function ($model) {
                 // get any children affected by this cache key
                 $children = Autocache::whereJsonContains('parents', [$model->key])->get();
-                
+
                 // get any parents affected by this cache key
                 $parents = Autocache::whereIn('key', $model->parents)->get();
-                
-                return collect([$model])->merge($parents)->merge($children);    
+
+                return collect([$model])->merge($parents)->merge($children);
             })
             ->flatten()
             ->unique()
             ->each(fn ($model) => $model->delete());
     }
-    
+
     public function invalidateTags($tags)
-    {           
+    {
         dd($tags);
         Autocache::whereJsonContains('tags', $tags)
             ->get()
             ->map(function ($model) {
                 // get any children affected by this cache key
                 $children = Autocache::whereJsonContains('parents', [$model->key])->get();
-                
+
                 // get any parents affected by this cache key
                 $parents = Autocache::whereIn('key', $model->parents)->get();
-                
-                return collect([$model])->merge($parents)->merge($children);    
+
+                return collect([$model])->merge($parents)->merge($children);
             })
             ->flatten()
             ->unique()

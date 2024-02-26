@@ -18,10 +18,10 @@ class ServiceProvider extends AddonServiceProvider
     public function bootAddon()
     {
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        
+
         $this->rebindPartialTag();
     }
-    
+
     private function rebindPartialTag()
     {
         $extensions = app('statamic.extensions');
@@ -29,10 +29,10 @@ class ServiceProvider extends AddonServiceProvider
 
         $extensions[$key] = with($extensions[$key] ?? collect(), function ($bindings) {
             $bindings['partial'] = Tags\Partial::class;
-                
+
             return $bindings;
         });
-        
+
         return $this;
     }
 }
