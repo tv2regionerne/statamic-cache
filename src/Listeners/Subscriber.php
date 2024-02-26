@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Cache;
 use Statamic\Events\EntryBlueprintFound;
 use Statamic\Events\EntryDeleted;
 use Statamic\Events\EntrySaved;
+use Tv2regionerne\StatamicCache\Facades\Store;
 use Tv2regionerne\StatamicCuratedCollection\Events\CuratedCollectionTagEvent;
 use Tv2regionerne\StatamicCuratedCollection\Events\CuratedCollectionUpdatedEvent;
 use Tv2regionerne\StatamicDeduplicate\Events\CollectionTagEvent;
@@ -21,14 +22,6 @@ class Subscriber
         CuratedCollectionUpdatedEvent::class => 'invalidateCuratedCollections',
     ];
 
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
-    {
-
-    }
-
     public function subscribe($dispatcher): void
     {
         foreach ($this->events as $event => $method) {
@@ -41,7 +34,7 @@ class Subscriber
     public function registerEntry($event): void
     {
         if ($event->entry) {
-            app('cache-resources')->mergeEntries($event->entry);
+            Store::mergeEntries($event->entry);
         }
     }
 
@@ -49,14 +42,14 @@ class Subscriber
     {
         $collection = $event->tag->params->get('from');
         $tag = 'collection:'.$collection;
-        app('cache-resources')->mergeTags($tag);
+        Store::mergeTags($tag);
     }
 
     public function registerCuratedCollection($event): void
     {
         $handle = $event->tag;
         $tag = 'curated-collection:'.strtolower($handle);
-        app('cache-resources')->mergeTags($tag);
+        Store::mergeTags($tag);
     }
 
     public function invalidateCuratedCollections(CuratedCollectionUpdatedEvent $event)

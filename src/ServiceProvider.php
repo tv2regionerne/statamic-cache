@@ -18,13 +18,13 @@ class ServiceProvider extends AddonServiceProvider
 
     public function bootAddon()
     {
-        //
-    }
+        $extensions = app('statamic.extensions');
+        $key = 'Statamic\\Tags\\Tags';
 
-    public function register()
-    {
-        $this->app->singleton('cache-resources', function () {
-            return new Resource();
+        $extensions[$key] = with($extensions[$key] ?? collect(), function ($bindings) {
+            $bindings['partial'] = Tags\Partial::class;
+                
+            return $bindings;
         });
     }
 }

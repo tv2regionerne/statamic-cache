@@ -1,0 +1,41 @@
+<?php
+
+namespace Tv2regionerne\StatamicCache\Tags;
+
+use Statamic\Tags\Partial as BasePartial;
+use Tv2regionerne\StatamicCache\Facades\Store;
+
+class Partial extends BasePartial
+{
+    protected function render($partial)
+    {
+        if (! $this->shouldRender()) {
+            return;
+        }
+
+        if ($html = $this->runHooks('before-render')) {
+            return $html;
+        }
+
+        $variables = array_merge($this->context->all(), $this->params->all(), [
+            '__frontmatter' => $this->params->all(),
+            'slot' => $this->isPair ? trim($this->parse()) : null,
+        ]);
+
+        $key = $this->params->get('autocache_key', 'none');
+
+        Store::addWatcher($key);
+
+        $html = view($this->viewName($partial), $variables)
+            ->withoutExtractions()
+            ->render();
+
+        Store::removeWatcher($key);
+
+        Store::addKeyMapping($key);
+
+        $this->runHooks('render', $html);
+
+        return $html;
+    }
+}

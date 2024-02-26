@@ -2,9 +2,13 @@
 
 namespace Tv2regionerne\StatamicCache\Store;
 
+use Illuminate\Support\Facades\Cache as LaraCache;
+
 class Resource
 {
     protected array $entries;
+    
+    protected $store;
 
     protected array $tags = [];
 
@@ -12,6 +16,7 @@ class Resource
 
     public function __construct()
     {
+        $this->store = LaraCache::store();
         $this->entries = [];
         $this->tags = [];
         $this->watchers = ['default'];
@@ -83,6 +88,30 @@ class Resource
             $this->tags[$watcher] = array_merge($this->tags[$watcher], $tags);
         }
 
+        return $this;
+    }
+    
+    public function cache()
+    {
+        return $this->store;
+    }
+    
+    public function getFromCache($key)
+    {
+        return $this->store->get($key);
+    }
+    
+    public function addToCache($key, $value)
+    {
+        return $this->store->forever($key, $value); 
+    }
+    
+    public function addKeyMapping($key)
+    {
+        if ($tags = $this->cacheTags($key)) {
+            $this->addToCache(str_replace('autocache::partial:', 'autocache::mapping:', $key), $tags);  
+        }    
+        
         return $this;
     }
 }

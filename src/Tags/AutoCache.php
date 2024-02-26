@@ -2,15 +2,11 @@
 
 namespace Tv2regionerne\StatamicCache\Tags;
 
-use Illuminate\Support\Facades\Cache as LaraCache;
-use Statamic\Facades\Site;
-use Statamic\Facades\URL;
-use Statamic\Tags\Tags;
-use Statamic\View\Antlers\Language\Runtime\LiteralReplacementManager;
-use Statamic\View\Antlers\Language\Runtime\StackReplacementManager;
+use Statamic\Tags;
 use Statamic\View\State\CachesOutput;
+use Tv2regionerne\StatamicCache\Facades\Store;
 
-class AutoCache extends Tags implements CachesOutput
+class AutoCache extends Tags\Tags implements CachesOutput
 {
     public $events = [];
 
@@ -20,58 +16,48 @@ class AutoCache extends Tags implements CachesOutput
             return [];
         }
 
-        $store = LaraCache::store();
-        $tags = collect($this->params->explode('tags', []));
-
-        // Add entry id as tag
-        $tags->add($this->context->get('entry_id')->value());
-
-        $key = $this->getCacheKey();
-        $nestedCallsKey = $key.'_sections_stacks';
-
-        if ($cacheTags = LaraCache::get($key.'-tags')) {
-            $store = $store->tags($cacheTags);
-        }
-
-        if ($cached = $store->get($key)) {
-            $nestedResults = $store->get($nestedCallsKey);
-
-            if ($nestedResults != null) {
-                StackReplacementManager::restoreCachedStacks($nestedResults['stacks']);
-                LiteralReplacementManager::restoreCachedSections($nestedResults['sections']);
+        Tags\Partial::hook('before-render', function () {
+            $src = $this->params->get('src') ?? str_replace('partial:', '', $this->tag);
+            
+            // get depth of stack
+            $parser = new \ReflectionObject($this->parser);
+            $depth = $parser->getProperty('parseStack')->getValue($this->parser);
+            
+            // if we are looping
+            if ($count = $this->context->int('count')) {
+                $depth .= ':'.$count;
             }
+            
+            $key = ($prefix = $this->params->get('prefix') ? $prefix.'__' : '').'autocache::partial:'.$depth.':'.str_replace('/', ':', $src);
+            
+            if ($cache = Store::getFromCache($key)) {
+                return $cache;
+            }
+            
+            $this->params->put('autocache_key', $key);
+            
+            // this could probably be handled in a store?
+            $parents = collect($this->context->get('autocache_parents', []))->push($key)->all();
+            $this->context->put('autocache_parents', $parents);            
+        });
+        
+        Tags\Partial::hook('render', function ($html, $next) {
+            $html = $next($html);
+            
+            if ($key = $this->params->get('autocache_key')) {
+                $html = "<!-- {$key} -->\r\n".$html;
+                
+                Store::addToCache($key, $html);  
+            }
+            
+            if ($parents = $this->params->get('autocache_parents')) {
+                Store::addToCache(str_replace('autocache::partial:', 'autocache::parents:', $key), $parents);  
+            }            
+            
+            return $html;
+        });
 
-            return $cached;
-        }
-
-        app('cache-resources')->addWatcher($key);
-        $html = (string) $this->parse([]);
-        app('cache-resources')->removeWatcher($key);
-
-        $eventTags = app('cache-resources')->cacheTags($key);
-        $tags = $tags->concat($eventTags);
-
-        $store = $store->tags($tags->toArray());
-        $store->put($key, $html, $this->getCacheLength());
-        LaraCache::put($key.'-tags', $tags->toArray());
-
-        $cachedSections = LiteralReplacementManager::getCachedSections();
-        $cachedStacks = StackReplacementManager::getCachedStacks();
-
-        if (! empty($cachedSections) || ! empty($cachedStacks)) {
-            $nestedCalls = [
-                'sections' => LiteralReplacementManager::getCachedSections(),
-                'stacks' => StackReplacementManager::getCachedStacks(),
-            ];
-
-            $store->put($nestedCallsKey, $nestedCalls, $this->getCacheLength());
-        }
-
-        // Do some cleanup so things don't leak elsewhere.
-        StackReplacementManager::clearCachedStacks();
-        LiteralReplacementManager::clearCachedSections();
-
-        return $html;
+        return (string) $this->parse([]);
     }
 
     private function isEnabled()
@@ -82,42 +68,5 @@ class AutoCache extends Tags implements CachesOutput
 
         // Only GET requests. This disables the cache during live preview.
         return request()->method() === 'GET';
-    }
-
-    private function getCacheKey()
-    {
-        if ($this->params->has('key')) {
-            return $this->params->get('key');
-        }
-
-        $hash = [
-            'content' => $this->content,
-            'params' => $this->params->all(),
-        ];
-
-        $scope = $this->params->get('scope', 'site');
-
-        if ($scope === 'site') {
-            $hash['site'] = Site::current()->handle();
-        }
-
-        if ($scope === 'page') {
-            $hash['url'] = URL::makeAbsolute(URL::getCurrent());
-        }
-
-        if ($scope === 'user') {
-            $hash['user'] = ($user = auth()->user()) ? $user->id : 'guest';
-        }
-
-        return 'statamic.cache-tag.'.md5(json_encode($hash));
-    }
-
-    private function getCacheLength()
-    {
-        if (! $length = $this->params->get('for')) {
-            return null;
-        }
-
-        return now()->add('+'.$length);
     }
 }
