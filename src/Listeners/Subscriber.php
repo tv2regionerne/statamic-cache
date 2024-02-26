@@ -20,14 +20,14 @@ class Subscriber
         EntrySaved::class => 'invalidateEntry',
         EntryDeleted::class => 'invalidateEntry',
         CuratedCollectionUpdatedEvent::class => 'invalidateCuratedCollections',
-        
+
         KeyForgotten::class => 'removeAutocacheModels',
     ];
 
     public function subscribe($dispatcher): void
     {
         $this->removeAutocacheModels('articles:461057e5-0b12-4f11-a335-958c04e16e3b');
-        
+
         foreach ($this->events as $event => $method) {
             if (class_exists($event)) {
                 $dispatcher->listen($event, [self::class, $method]);
@@ -41,7 +41,7 @@ class Subscriber
         if (! $event->entry) {
             return;
         }
-            
+
         Store::mergeEntries($event->entry);
     }
 
@@ -76,10 +76,10 @@ class Subscriber
             $collectionHandle.':'.$entry->id(),
             'collection:'.$collectionHandle,
         ];
-        
+
         Store::invalidateTags($tags);
     }
-    
+
     public function removeAutocacheModels($key)
     {
         Store::removeKeyMappingData($key);

@@ -12,7 +12,7 @@ class Partial extends BasePartial
         if (! $this->shouldRender()) {
             return;
         }
-        
+
         if ($html = $this->runHooks('before-render')) {
             return $html;
         }
@@ -29,7 +29,7 @@ class Partial extends BasePartial
         $html = view($this->viewName($partial), $variables)
             ->withoutExtractions()
             ->render();
-            
+
         Store::removeWatcher($key);
 
         Store::addKeyMappingData($key, ($this->context->get('autocache_parents') ?? []));
