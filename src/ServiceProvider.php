@@ -4,7 +4,6 @@ namespace Tv2regionerne\StatamicCache;
 
 use Statamic\Providers\AddonServiceProvider;
 use Tv2regionerne\StatamicCache\Listeners\Subscriber;
-use Tv2regionerne\StatamicCache\Store\Resource;
 
 class ServiceProvider extends AddonServiceProvider
 {
@@ -18,13 +17,22 @@ class ServiceProvider extends AddonServiceProvider
 
     public function bootAddon()
     {
-        //
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+
+        $this->rebindPartialTag();
     }
 
-    public function register()
+    private function rebindPartialTag()
     {
-        $this->app->singleton('cache-resources', function () {
-            return new Resource();
+        $extensions = app('statamic.extensions');
+        $key = 'Statamic\\Tags\\Tags';
+
+        $extensions[$key] = with($extensions[$key] ?? collect(), function ($bindings) {
+            $bindings['partial'] = Tags\Partial::class;
+
+            return $bindings;
         });
+
+        return $this;
     }
 }
