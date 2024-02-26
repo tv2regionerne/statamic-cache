@@ -163,6 +163,6 @@ class Manager
             ->each(fn ($model) => $this->store->forget($model->key))
             ->pluck('url')
             ->unique()
-            ->each(fn ($url) => app(Cacher::class)->invalidateUrl($url));
+            ->each(fn ($url) => app(Cacher::class)->invalidateUrl($url['url']));
     }
 }
