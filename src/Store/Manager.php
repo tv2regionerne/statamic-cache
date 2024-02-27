@@ -147,22 +147,28 @@ class Manager
 
     public function invalidateTags($tags)
     {
-        Autocache::whereJsonContains('tags', $tags)
-            ->get()
-            ->map(function ($model) {
-                // get any children affected by this cache key
-                $children = Autocache::whereJsonContains('parents', [$model->key])->get();
 
-                // get any parents affected by this cache key
-                $parents = Autocache::whereIn('key', $model->parents)->get();
+        foreach ($tags as $tag) {
+            Autocache::whereJsonContains('tags', $tag)
+                ->get()
+                ->map(function ($model) {
+                    // get any children affected by this cache key
+                    $children = Autocache::whereJsonContains('parents', $model->key)->get();
 
-                return collect([$model])->merge($parents)->merge($children);
-            })
-            ->flatten()
-            ->unique()
-            ->each(fn ($model) => $this->store->forget($model->key))
-            ->pluck('url')
-            ->unique()
-            ->each(fn ($url) => app(Cacher::class)->invalidateUrl($url['url']));
+                    // get any parents affected by this cache key
+                    $parents = Autocache::whereIn('key', $model->parents)->get();
+
+                    return collect([$model])->merge($parents)->merge($children);
+                })
+                ->flatten()
+                ->unique()
+                ->each(fn ($model) => $this->invalidateModel($model));
+        }
+    }
+
+    public function invalidateModel(Autocache $autocache) {
+        ray($autocache);
+        $this->store->forget($autocache->key);
+        app(Cacher::class)->invalidateUrl($autocache->url);
     }
 }
