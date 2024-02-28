@@ -192,7 +192,7 @@ class Manager
         $models
             ->pluck('url')
             ->unique()
-            ->each(fn ($url) => app(Cacher::class)->invalidateUrl($url['url']));
+            ->each(fn ($url) => app(Cacher::class)->invalidateUrl($url));
 
         $models->each->delete();
     }

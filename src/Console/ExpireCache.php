@@ -4,6 +4,7 @@ namespace Tv2regionerne\StatamicCache\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Tv2regionerne\StatamicCache\Facades\Store;
 use Tv2regionerne\StatamicCache\Models\Autocache;
 
 class ExpireCache extends Command
@@ -39,7 +40,7 @@ class ExpireCache extends Command
             ->values()
             ->all();
 
-        if (! empty($tags)) {
+        if (! empty($keys)) {
             Store::invalidateKeys($keys);
         }
 
