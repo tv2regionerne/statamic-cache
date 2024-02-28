@@ -32,7 +32,12 @@ class Partial extends BasePartial
 
         Store::removeWatcher($key);
 
-        Store::addKeyMappingData($key, ($this->context->get('autocache_parents') ?? []));
+        Store::addKeyMappingData(
+            $key,
+            ($this->context->get('autocache_parents') ?? []),
+            (($length = $this->params->get('for')) ? now()->add('+'.$length) : null),
+            $this->params->explode('tags', []),
+        );
 
         return $this->runHooks('render', $html);
     }

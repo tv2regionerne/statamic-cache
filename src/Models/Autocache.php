@@ -12,7 +12,7 @@ class Autocache extends Model
     public $table = 'autocache';
 
     protected $casts = [
-        'tags' => 'array',
+        'content' => 'array',
         'parents' => 'array',
     ];
 

@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('autocache', function (Blueprint $table) {
             $table->uuid('id')->unique()->index();
-            $table->string('key');
+            $table->string('key')->index();
             $table->jsonb('parents');
-            $table->jsonb('tags');
+            $table->jsonb('content');
             $table->string('url');
+            $table->integer('expires_at')->nullable();
+            $table->string('tags')->nullable();
             $table->timestamps();
         });
     }

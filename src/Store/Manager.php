@@ -3,6 +3,7 @@
 namespace Tv2regionerne\StatamicCache\Store;
 
 use Illuminate\Support\Facades\Cache as LaraCache;
+use Livewire\Livewire;
 use Statamic\Facades\URL;
 use Statamic\StaticCaching\Cacher;
 use Tv2regionerne\StatamicCache\Models\Autocache;
@@ -53,7 +54,7 @@ class Manager
         return $this->tags[$key] ?? [];
     }
 
-    public function cacheTags($key = 'default')
+    public function cacheContent($key = 'default')
     {
         $entryTags = collect($this->entries($key))
             ->transform(function ($entry) {
@@ -114,14 +115,18 @@ class Manager
         return $this->store->forever($key, $value);
     }
 
-    public function addKeyMappingData($key, $parents = [])
+    public function addKeyMappingData($key, $parents = [], $expires = null, $tags = [])
     {
+        $url = URL::makeAbsolute(class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent());
+
         Autocache::updateOrCreate([
             'key' => $key,
-            'url' => URL::makeAbsolute(URL::getCurrent()),
+            'url' => $url,
         ], [
-            'tags' => $this->cacheTags($key),
+            'content' => $this->cacheContent($key),
             'parents' => collect($parents)->filter(fn ($value) => $value != $key)->all(),
+            'expires_at' => $expires?->timestamp,
+            'tags' => implode(',', $tags),
         ]);
 
         return $this;
@@ -129,7 +134,7 @@ class Manager
 
     public function removeKeyMappingData($tag)
     {
-        Autocache::whereJsonContains('tags', [$tag])
+        Autocache::whereJsonContains('content', [$tag])
             ->get()
             ->map(function ($model) {
                 // get any children affected by this cache key
@@ -143,12 +148,34 @@ class Manager
             ->flatten()
             ->unique()
             ->each(fn ($model) => $model->delete());
+
+        return $this;
     }
 
-    public function invalidateTags($tags)
+    public function invalidateKeys($keys)
     {
-        Autocache::whereJsonContains('tags', $tags)
-            ->get()
+        $this->invalidateModels(Autocache::whereIn('key', $keys)->get());
+
+        return $this;
+    }
+
+    public function invalidateContent($ids)
+    {
+        $query = Autocache::newQuery()
+            ->where(function ($query) use ($ids) {
+                foreach ($ids as $index => $id) {
+                    $query->{($index == 0 ? 'where' : 'orWhere').'JsonContains'}('content', [$id]);
+                }
+            });
+
+        $this->invalidateModels($query->get());
+
+        return $this;
+    }
+
+    private function invalidateModels($models)
+    {
+        $models
             ->map(function ($model) {
                 // get any children affected by this cache key
                 $children = Autocache::whereJsonContains('parents', [$model->key])->get();
@@ -160,9 +187,13 @@ class Manager
             })
             ->flatten()
             ->unique()
-            ->each(fn ($model) => $this->store->forget($model->key))
+            ->each(fn ($model) => $this->store->forget($model->key));
+
+        $models
             ->pluck('url')
             ->unique()
             ->each(fn ($url) => app(Cacher::class)->invalidateUrl($url['url']));
+
+        $models->each->delete();
     }
 }

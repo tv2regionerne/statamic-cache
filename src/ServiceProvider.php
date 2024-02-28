@@ -2,11 +2,16 @@
 
 namespace Tv2regionerne\StatamicCache;
 
+use Illuminate\Console\Scheduling\Schedule;
 use Statamic\Providers\AddonServiceProvider;
 use Tv2regionerne\StatamicCache\Listeners\Subscriber;
 
 class ServiceProvider extends AddonServiceProvider
 {
+    protected $commands = [
+        Console\ExpireCache::class,
+    ];
+
     protected $tags = [
         Tags\AutoCache::class,
     ];
@@ -19,7 +24,8 @@ class ServiceProvider extends AddonServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
-        $this->rebindPartialTag();
+        $this->rebindPartialTag()
+            ->bootScheduledTasks();
     }
 
     private function rebindPartialTag()
@@ -31,6 +37,15 @@ class ServiceProvider extends AddonServiceProvider
             $bindings['partial'] = Tags\Partial::class;
 
             return $bindings;
+        });
+
+        return $this;
+    }
+
+    private function bootScheduledTasks()
+    {
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
+            $schedule->command('statamic-cache:expire')->everyMinute();
         });
 
         return $this;

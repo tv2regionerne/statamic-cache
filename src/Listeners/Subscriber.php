@@ -61,7 +61,7 @@ class Subscriber
     {
         $tags = ['curated-collection:'.$event->tag];
 
-        Store::invalidateTags($tags);
+        Store::invalidateContent($tags);
     }
 
     public function invalidateEntry($event)
@@ -75,7 +75,7 @@ class Subscriber
             'collection:'.$collectionHandle,
         ];
 
-        Store::invalidateTags($tags);
+        Store::invalidateContent($tags);
     }
 
     public function removeAutocacheModels($key)

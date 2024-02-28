@@ -2,6 +2,8 @@
 
 namespace Tv2regionerne\StatamicCache\Tags;
 
+use Livewire\Livewire;
+use Statamic\Facades\Site;
 use Statamic\Facades\URL;
 use Statamic\Tags;
 use Statamic\View\State\CachesOutput;
@@ -29,7 +31,21 @@ class AutoCache extends Tags\Tags implements CachesOutput
                 $depth .= ':'.$count;
             }
 
-            $key = 'autocache::'.md5(URL::makeAbsolute(URL::getCurrent())).':'.$depth.':'.str_replace('/', '.', $src);
+            $scope = $this->params->get('scope', 'page');
+
+            if ($scope === 'site') {
+                $hash = Site::current()->handle();
+            }
+
+            if ($scope === 'page') {
+                $hash = URL::makeAbsolute(class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent());
+            }
+
+            if ($scope === 'user') {
+                $hash = ($user = auth()->user()) ? $user->id : 'guest';
+            }
+
+            $key = 'autocache::'.md5($hash).':'.$depth.':'.str_replace('/', '.', $src);
 
             if ($prefix = $this->params->get('prefix') ? $prefix.'__' : '') {
                 $key = $prefix.$key;
