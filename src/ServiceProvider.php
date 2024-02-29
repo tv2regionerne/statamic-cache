@@ -11,10 +11,10 @@ class ServiceProvider extends AddonServiceProvider
     protected $commands = [
         Console\ExpireCache::class,
     ];
-    
+
     protected $middlewareGroups = [
         'web' => [
-            Http\Middleware\Autocache::class
+            Http\Middleware\Autocache::class,
         ],
     ];
 
