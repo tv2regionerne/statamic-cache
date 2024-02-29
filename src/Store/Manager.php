@@ -175,7 +175,7 @@ class Manager
 
     private function invalidateModels($models)
     {
-        $models
+        $models = $models
             ->map(function ($model) {
                 // get any children affected by this cache key
                 $children = Autocache::whereJsonContains('parents', [$model->key])->get();
