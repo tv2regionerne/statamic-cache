@@ -22,7 +22,7 @@ class Partial extends BasePartial
             'slot' => $this->isPair ? trim($this->parse()) : null,
         ]);
 
-        $key = $this->params->get('autocache_key', 'none');
+        $key = $this->context->get('autocache_key', 'none');
 
         Store::addWatcher($key);
 

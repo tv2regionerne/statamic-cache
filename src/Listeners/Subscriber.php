@@ -3,22 +3,23 @@
 namespace Tv2regionerne\StatamicCache\Listeners;
 
 use Illuminate\Cache\Events\KeyForgotten;
-use Statamic\Events\EntryBlueprintFound;
-use Statamic\Events\EntryDeleted;
-use Statamic\Events\EntrySaved;
+use Statamic\Events;
 use Tv2regionerne\StatamicCache\Facades\Store;
-use Tv2regionerne\StatamicCuratedCollection\Events\CuratedCollectionTagEvent;
 use Tv2regionerne\StatamicCuratedCollection\Events\CuratedCollectionUpdatedEvent;
-use Tv2regionerne\StatamicDeduplicate\Events\CollectionTagEvent;
 
 class Subscriber
 {
     protected $events = [
-        EntryBlueprintFound::class => 'registerEntry',
-        CollectionTagEvent::class => 'registerCollection',
-        CuratedCollectionTagEvent::class => 'registerCuratedCollection',
-        EntrySaved::class => 'invalidateEntry',
-        EntryDeleted::class => 'invalidateEntry',
+        Events\EntryDeleted::class => 'invalidateEntry',
+        Events\EntrySaved::class => 'invalidateEntry',
+
+        Events\GlobalSetDeleted::class => 'invalidateGlobal',
+        Events\GlobalVariablesSaved::class => 'invalidateGlobal',
+
+        Events\NavDeleted::class => 'invalidateNav',
+        Events\NavTreeSaved::class => 'invalidateNav',
+        Events\CollectionTreeSaved::class => 'invalidateNav',
+
         CuratedCollectionUpdatedEvent::class => 'invalidateCuratedCollections',
 
         KeyForgotten::class => 'removeAutocacheModels',
@@ -31,35 +32,13 @@ class Subscriber
                 $dispatcher->listen($event, [self::class, $method]);
             }
         }
-
-    }
-
-    public function registerEntry($event): void
-    {
-        if (! $event->entry) {
-            return;
-        }
-
-        Store::mergeEntries($event->entry);
-    }
-
-    public function registerCollection($event): void
-    {
-        $tag = 'collection:'.$event->tag->params->get('from');
-
-        Store::mergeTags($tag);
-    }
-
-    public function registerCuratedCollection($event): void
-    {
-        $tag = 'curated-collection:'.strtolower($event->tag);
-
-        Store::mergeTags($tag);
     }
 
     public function invalidateCuratedCollections(CuratedCollectionUpdatedEvent $event)
     {
-        $tags = ['curated-collection:'.$event->tag];
+        $tags = [
+            'curated-collection:'.$event->tag,
+        ];
 
         Store::invalidateContent($tags);
     }
@@ -73,6 +52,24 @@ class Subscriber
         $tags = [
             $collectionHandle.':'.$entry->id(),
             'collection:'.$collectionHandle,
+        ];
+
+        Store::invalidateContent($tags);
+    }
+
+    public function invalidateGlobal($event)
+    {
+        $tags = [
+            'global:'.($event->globals ?? $event->variables->globalSet())->handle(),
+        ];
+
+        Store::invalidateContent($tags);
+    }
+
+    public function invalidateNav($event)
+    {
+        $tags = [
+            'nav:'.($event->nav ?? $event->tree->structure())->handle(),
         ];
 
         Store::invalidateContent($tags);

@@ -11,9 +11,11 @@ class ServiceProvider extends AddonServiceProvider
     protected $commands = [
         Console\ExpireCache::class,
     ];
-
-    protected $tags = [
-        Tags\AutoCache::class,
+    
+    protected $middlewareGroups = [
+        'web' => [
+            Http\Middleware\Autocache::class
+        ],
     ];
 
     protected $subscribe = [
