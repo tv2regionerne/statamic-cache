@@ -29,7 +29,7 @@ class AutoCache
 
     private function isEnabled($request)
     {
-        if (! config('statamic.system.cache_tags_enabled', true)) {
+        if (! config('statamic-cache.enabled', true)) {
             return false;
         }
 

@@ -17,6 +17,12 @@ Then run the migrations:
 php artisan migrate
 ```
 
+You can also optionally publish the config:
+
+```bash
+php artisan vendor:publish --tag=statamic-cache-config
+```
+
 ## How to Use
 
 The addon should work automatically in most cases. It adds hooks to partial, nav and collection tags, as well as augmentation of entries and globals to determine what content is included in what partials. This data is then added to a database store that is used to determine what cached data should be invalidated at what times.
