@@ -5,7 +5,6 @@ namespace Tv2regionerne\StatamicCache\Listeners;
 use Illuminate\Cache\Events\KeyForgotten;
 use Statamic\Events;
 use Tv2regionerne\StatamicCache\Facades\Store;
-use Tv2regionerne\StatamicCuratedCollection\Events\CuratedCollectionUpdatedEvent;
 
 class Subscriber
 {
@@ -20,8 +19,6 @@ class Subscriber
         Events\NavTreeSaved::class => 'invalidateNav',
         Events\CollectionTreeSaved::class => 'invalidateNav',
 
-        CuratedCollectionUpdatedEvent::class => 'invalidateCuratedCollections',
-
         KeyForgotten::class => 'removeAutocacheModels',
     ];
 
@@ -32,15 +29,6 @@ class Subscriber
                 $dispatcher->listen($event, [self::class, $method]);
             }
         }
-    }
-
-    public function invalidateCuratedCollections(CuratedCollectionUpdatedEvent $event)
-    {
-        $tags = [
-            'curated-collection:'.$event->tag,
-        ];
-
-        Store::invalidateContent($tags);
     }
 
     public function invalidateEntry($event)

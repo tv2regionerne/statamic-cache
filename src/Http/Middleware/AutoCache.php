@@ -67,12 +67,6 @@ class AutoCache
             Store::mergeTags([$handle]);
         });
 
-        if (class_exists(\Tv2regionerne\StatamicCuratedCollection\Tags\StatamicCuratedCollection::class)) {
-            \Tv2regionerne\StatamicCuratedCollection\Tags\StatamicCuratedCollection::hook('init', function () {
-                Store::mergeTags([$this->tag]);
-            });
-        }
-
         return $this;
     }
 
