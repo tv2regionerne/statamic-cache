@@ -3,13 +3,10 @@
 namespace Tv2regionerne\StatamicCache\Http\Middleware;
 
 use Closure;
-use Livewire\Livewire;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Contracts\Globals\Variables;
-use Statamic\Contracts\Taxonomies\Term;
-use Statamic\Facades\Site;
-use Statamic\Facades\URL;
 use Statamic\Tags;
+use Statamic\Taxonomies\LocalizedTerm;
 use Tv2regionerne\StatamicCache\Facades\Store;
 use Tv2regionerne\StatamicCache\Tags\Partial;
 
@@ -46,7 +43,7 @@ class AutoCache
             Store::mergeTags([$this->collection()->handle().':'.$this->id()]);
         });
 
-        app(Term::class)::hook('augmented', function () {
+        LocalizedTerm::hook('augmented', function () {
             Store::mergeTags(['term:'.$this->id()]);
         });
 
@@ -78,36 +75,7 @@ class AutoCache
     private function setupPartialHooks()
     {
         Partial::hook('before-render', function () {
-            $src = $this->params->get('src') ?? str_replace('partial:', '', $this->tag);
-
-            // get depth of stack
-            $parser = new \ReflectionObject($this->parser);
-            $depth = $parser->getProperty('parseStack')->getValue($this->parser);
-
-            // if we are looping
-            if ($count = $this->context->int('count')) {
-                $depth .= ':'.$count;
-            }
-
-            $scope = $this->params->get('scope', 'page');
-
-            if ($scope === 'site') {
-                $hash = Site::current()->handle();
-            }
-
-            if ($scope === 'page') {
-                $hash = URL::makeAbsolute(class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent());
-            }
-
-            if ($scope === 'user') {
-                $hash = ($user = auth()->user()) ? $user->id : 'guest';
-            }
-
-            $key = 'autocache::'.md5($hash).':'.$depth.':'.str_replace('/', '.', $src);
-
-            if ($prefix = $this->params->get('prefix') ? $prefix.'__' : '') {
-                $key = $prefix.$key;
-            }
+            $key = $this->generateAutoCacheKey();
 
             if ($cache = Store::getFromCache($key)) {
                 return $cache;
