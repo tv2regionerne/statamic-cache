@@ -6,6 +6,7 @@ use Closure;
 use Livewire\Livewire;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Contracts\Globals\Variables;
+use Statamic\Contracts\Taxonomies\Term;
 use Statamic\Facades\Site;
 use Statamic\Facades\URL;
 use Statamic\Tags;
@@ -43,6 +44,10 @@ class AutoCache
     {
         app(Entry::class)::hook('augmented', function () {
             Store::mergeTags([$this->collection()->handle().':'.$this->id()]);
+        });
+
+        app(Term::class)::hook('augmented', function () {
+            Store::mergeTags(['term:'.$this->id()]);
         });
 
         app(Variables::class)::hook('augmented', function () {
