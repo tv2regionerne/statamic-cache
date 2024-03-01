@@ -4,6 +4,8 @@ namespace Tv2regionerne\StatamicCache\Http\Middleware;
 
 use Closure;
 use Livewire\Livewire;
+use Statamic\Contracts\Entries\Entry;
+use Statamic\Contracts\Globals\Variables;
 use Statamic\Facades\Site;
 use Statamic\Facades\URL;
 use Statamic\Tags;
@@ -39,25 +41,13 @@ class AutoCache
 
     private function setupAugmentationHooks()
     {
-        \Statamic\Entries\Entry::hook('augmented', function () {
+        app(Entry::class)::hook('augmented', function () {
             Store::mergeTags([$this->collection()->handle().':'.$this->id()]);
         });
 
-        if (class_exists(\Statamic\Eloquent\Entries\Entry::class)) {
-            \Statamic\Eloquent\Entries\Entry::hook('augmented', function () {
-                Store::mergeTags([$this->collection()->handle().':'.$this->id()]);
-            });
-        }
-
-        \Statamic\Globals\Variables::hook('augmented', function () {
+        app(Variables::class)::hook('augmented', function () {
             Store::mergeTags(['global:'.$this->globalSet()->handle()]);
         });
-
-        if (class_exists(\Statamic\Eloquent\Globals\Variables::class)) {
-            \Statamic\Eloquent\Globals\Variables::hook('augmented', function () {
-                Store::mergeTags(['global:'.$this->globalSet()->handle()]);
-            });
-        }
     }
 
     private function setupCollectionHooks()
