@@ -3,6 +3,7 @@
 namespace Tv2regionerne\StatamicCache\Http\Middleware;
 
 use Closure;
+use Statamic\Contracts\Assets\Asset;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Contracts\Globals\Variables;
 use Statamic\Tags;
@@ -39,6 +40,10 @@ class AutoCache
 
     private function setupAugmentationHooks()
     {
+        app(Asset::class)::hook('augmented', function () {
+            Store::mergeTags(['asset:'.$this->id()]);
+        });
+
         app(Entry::class)::hook('augmented', function () {
             Store::mergeTags([$this->collection()->handle().':'.$this->id()]);
         });

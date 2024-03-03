@@ -9,6 +9,9 @@ use Tv2regionerne\StatamicCache\Facades\Store;
 class Subscriber
 {
     protected $events = [
+        Events\AssetDeleted::class => 'invalidateAsset',
+        Events\AssetSaved::class => 'invalidateAsset',
+
         Events\EntryDeleted::class => 'invalidateEntry',
         Events\EntrySaved::class => 'invalidateEntry',
 
@@ -29,6 +32,15 @@ class Subscriber
                 $dispatcher->listen($event, [self::class, $method]);
             }
         }
+    }
+
+    public function invalidateAsset($event)
+    {
+        $tags = [
+            'asset:'.$event->asset->id(),
+        ];
+
+        Store::invalidateContent($tags);
     }
 
     public function invalidateEntry($event)
@@ -58,6 +70,15 @@ class Subscriber
     {
         $tags = [
             'nav:'.($event->nav ?? $event->tree->structure())->handle(),
+        ];
+
+        Store::invalidateContent($tags);
+    }
+
+    public function invalidateTerm($event)
+    {
+        $tags = [
+            'term:'.$event->term->id(),
         ];
 
         Store::invalidateContent($tags);
