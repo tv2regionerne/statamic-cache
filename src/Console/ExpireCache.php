@@ -41,7 +41,7 @@ class ExpireCache extends Command
             ->all();
 
         if (! empty($keys)) {
-            Store::invalidateKeys($keys);
+            Store::invalidateCacheKeys($keys);
         }
 
         $this->info('✔️ Done');

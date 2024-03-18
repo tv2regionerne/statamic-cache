@@ -2,6 +2,9 @@
 
 namespace Tv2regionerne\StatamicCache\Tags;
 
+use Livewire\Livewire;
+use Statamic\Facades\Site;
+use Statamic\Facades\URL;
 use Statamic\Tags\Partial as BasePartial;
 use Tv2regionerne\StatamicCache\Facades\Store;
 
@@ -22,7 +25,7 @@ class Partial extends BasePartial
             'slot' => $this->isPair ? trim($this->parse()) : null,
         ]);
 
-        $key = $this->params->get('autocache_key', 'none');
+        $key = $this->context->get('autocache_key', $this->generateAutocacheKey());
 
         Store::addWatcher($key);
 
@@ -40,5 +43,41 @@ class Partial extends BasePartial
         );
 
         return $this->runHooks('render', $html);
+    }
+
+    private function generateAutocacheKey()
+    {
+        $src = $this->params->get('src') ?? str_replace('partial:', '', $this->tag);
+
+        // get depth of stack
+        $parser = new \ReflectionObject($this->parser);
+        $depth = $parser->getProperty('parseStack')->getValue($this->parser);
+
+        // if we are looping
+        if ($count = $this->context->int('count')) {
+            $depth .= ':'.$count;
+        }
+
+        $scope = $this->params->get('scope', 'page');
+
+        if ($scope === 'site') {
+            $hash = Site::current()->handle();
+        }
+
+        if ($scope === 'page') {
+            $hash = URL::makeAbsolute(class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent());
+        }
+
+        if ($scope === 'user') {
+            $hash = ($user = auth()->user()) ? $user->id : 'guest';
+        }
+
+        $key = 'autocache::'.md5($hash).':'.$depth.':'.str_replace('/', '.', $src);
+
+        if ($prefix = $this->params->get('prefix') ? $prefix.'__' : '') {
+            $key = $prefix.$key;
+        }
+
+        return $key;
     }
 }

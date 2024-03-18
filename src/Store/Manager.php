@@ -2,7 +2,8 @@
 
 namespace Tv2regionerne\StatamicCache\Store;
 
-use Illuminate\Support\Facades\Cache as LaraCache;
+use Illuminate\Support\Facades\Cache;
+use InvalidArgumentException;
 use Livewire\Livewire;
 use Statamic\Facades\URL;
 use Statamic\StaticCaching\Cacher;
@@ -20,7 +21,12 @@ class Manager
 
     public function __construct()
     {
-        $this->store = LaraCache::store();
+        try {
+            $this->store = Cache::store('statamic_autocache');
+        } catch (InvalidArgumentException $e) {
+            $this->store = Cache::store();
+        }
+
         $this->entries = [];
         $this->tags = [];
         $this->watchers = ['default'];
@@ -152,7 +158,7 @@ class Manager
         return $this;
     }
 
-    public function invalidateKeys($keys)
+    public function invalidateCacheKeys($keys)
     {
         $this->invalidateModels(Autocache::whereIn('key', $keys)->get());
 
@@ -175,7 +181,7 @@ class Manager
 
     private function invalidateModels($models)
     {
-        $models
+        $models = $models
             ->map(function ($model) {
                 // get any children affected by this cache key
                 $children = Autocache::whereJsonContains('parents', [$model->key])->get();
