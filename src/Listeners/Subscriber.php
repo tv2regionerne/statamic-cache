@@ -2,7 +2,6 @@
 
 namespace Tv2regionerne\StatamicCache\Listeners;
 
-use Illuminate\Cache\Events\KeyForgotten;
 use Statamic\Events;
 use Tv2regionerne\StatamicCache\Facades\Store;
 
