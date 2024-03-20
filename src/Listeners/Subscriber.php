@@ -21,8 +21,6 @@ class Subscriber
         Events\NavDeleted::class => 'invalidateNav',
         Events\NavTreeSaved::class => 'invalidateNav',
         Events\CollectionTreeSaved::class => 'invalidateNav',
-
-        KeyForgotten::class => 'removeAutocacheModels',
     ];
 
     public function subscribe($dispatcher): void
@@ -82,10 +80,5 @@ class Subscriber
         ];
 
         Store::invalidateContent($tags);
-    }
-
-    public function removeAutocacheModels($key)
-    {
-        Store::removeKeyMappingData($key);
     }
 }

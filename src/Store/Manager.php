@@ -2,8 +2,6 @@
 
 namespace Tv2regionerne\StatamicCache\Store;
 
-use Illuminate\Support\Facades\Cache;
-use InvalidArgumentException;
 use Livewire\Livewire;
 use Statamic\Facades\URL;
 use Statamic\StaticCaching\Cacher;
@@ -21,12 +19,6 @@ class Manager
 
     public function __construct()
     {
-        try {
-            $this->store = Cache::store('statamic_autocache');
-        } catch (InvalidArgumentException $e) {
-            $this->store = Cache::store();
-        }
-
         $this->entries = [];
         $this->tags = [];
         $this->watchers = ['default'];
@@ -106,61 +98,15 @@ class Manager
         return $this;
     }
 
-    public function cache()
+    public function addKeyMappingData($key)
     {
-        return $this->store;
-    }
-
-    public function getFromCache($key)
-    {
-        return $this->store->get($key);
-    }
-
-    public function addToCache($key, $value)
-    {
-        return $this->store->forever($key, $value);
-    }
-
-    public function addKeyMappingData($key, $parents = [], $expires = null, $tags = [])
-    {
-        $url = URL::makeAbsolute(class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent());
+        $url = class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent();
 
         Autocache::updateOrCreate([
-            'key' => $key,
             'url' => $url,
         ], [
             'content' => $this->cacheContent($key),
-            'parents' => collect($parents)->filter(fn ($value) => $value != $key)->all(),
-            'expires_at' => $expires?->timestamp,
-            'tags' => implode(',', $tags),
         ]);
-
-        return $this;
-    }
-
-    public function removeKeyMappingData($tag)
-    {
-        Autocache::whereJsonContains('content', [$tag])
-            ->get()
-            ->map(function ($model) {
-                // get any children affected by this cache key
-                $children = Autocache::whereJsonContains('parents', [$model->key])->get();
-
-                // get any parents affected by this cache key
-                $parents = Autocache::whereIn('key', $model->parents)->get();
-
-                return collect([$model])->merge($parents)->merge($children);
-            })
-            ->flatten()
-            ->unique()
-            ->each(fn ($model) => $model->delete());
-
-        return $this;
-    }
-
-    public function invalidateCacheKeys($keys)
-    {
-        $this->invalidateModels(Autocache::whereIn('key', $keys)->get());
 
         return $this;
     }
@@ -181,24 +127,8 @@ class Manager
 
     private function invalidateModels($models)
     {
-        $models = $models
-            ->map(function ($model) {
-                // get any children affected by this cache key
-                $children = Autocache::whereJsonContains('parents', [$model->key])->get();
-
-                // get any parents affected by this cache key
-                $parents = Autocache::whereIn('key', $model->parents)->get();
-
-                return collect([$model])->merge($parents)->merge($children);
-            })
-            ->flatten()
-            ->unique()
-            ->each(fn ($model) => $this->store->forget($model->key));
-
-        $models
-            ->pluck('url')
-            ->unique()
-            ->each(fn ($url) => app(Cacher::class)->invalidateUrl($url));
+        $cacher = app(Cacher::class);
+        $cacher->invalidateUrls($models->pluck('url')->all());
 
         $models->each->delete();
     }
