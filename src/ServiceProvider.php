@@ -9,7 +9,7 @@ class ServiceProvider extends AddonServiceProvider
 {
     protected $middlewareGroups = [
         'web' => [
-            Http\Middleware\Autocache::class,
+            Http\Middleware\AutoCache::class,
         ],
     ];
 
