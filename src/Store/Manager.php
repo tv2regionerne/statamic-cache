@@ -167,7 +167,7 @@ class Manager
 
     public function invalidateContent($ids)
     {
-        $query = Autocache::newQuery()
+        $query = Autocache::query()
             ->where(function ($query) use ($ids) {
                 foreach ($ids as $index => $id) {
                     $query->{($index == 0 ? 'where' : 'orWhere').'JsonContains'}('content', [$id]);
