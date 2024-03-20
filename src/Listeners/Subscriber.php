@@ -2,7 +2,6 @@
 
 namespace Tv2regionerne\StatamicCache\Listeners;
 
-use Illuminate\Cache\Events\KeyForgotten;
 use Statamic\Events;
 use Tv2regionerne\StatamicCache\Facades\Store;
 
@@ -21,8 +20,6 @@ class Subscriber
         Events\NavDeleted::class => 'invalidateNav',
         Events\NavTreeSaved::class => 'invalidateNav',
         Events\CollectionTreeSaved::class => 'invalidateNav',
-
-        KeyForgotten::class => 'removeAutocacheModels',
     ];
 
     public function subscribe($dispatcher): void
@@ -82,10 +79,5 @@ class Subscriber
         ];
 
         Store::invalidateContent($tags);
-    }
-
-    public function removeAutocacheModels($key)
-    {
-        Store::removeKeyMappingData($key);
     }
 }
