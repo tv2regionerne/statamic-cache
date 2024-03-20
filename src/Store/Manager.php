@@ -102,11 +102,14 @@ class Manager
     {
         $url = class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent();
 
-        Autocache::updateOrCreate([
-            'url' => $url,
-        ], [
-            'content' => $this->cacheContent($key),
-        ]);
+        if (!empty($this->cacheContent($key)))
+        {
+            Autocache::updateOrCreate([
+                'url' => $url,
+            ], [
+                'content' => $this->cacheContent($key),
+            ]);
+        }
 
         return $this;
     }
