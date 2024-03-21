@@ -63,10 +63,10 @@ class Subscriber
         Store::invalidateContent($tags);
     }
 
-    public function invalidateNav($event)
+    public function invalidateNav(Events\NavSaved|Events\NavTreeSaved $event)
     {
         $tags = [
-            'nav:'.($event->nav ?? $event->tree->structure())->handle(),
+            'nav:'.($event->nav ?? $event->tree)->handle(),
         ];
 
         Store::invalidateContent($tags);
