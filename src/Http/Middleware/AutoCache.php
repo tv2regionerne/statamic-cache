@@ -48,28 +48,38 @@ class AutoCache
 
     private function setupAugmentationHooks()
     {
-        app(Asset::class)::hook('augmented', function () {
+        app(Asset::class)::hook('augmented', function ($augmented, $next) {
             Store::mergeTags(['asset:'.$this->id()]);
+
+            return $next($augmented);
         });
 
-        app(Entry::class)::hook('augmented', function () {
+        app(Entry::class)::hook('augmented', function ($augmented, $next) {
             Store::mergeTags([$this->collection()->handle().':'.$this->id()]);
+
+            return $next($augmented);
         });
 
-        LocalizedTerm::hook('augmented', function () {
+        LocalizedTerm::hook('augmented', function ($augmented, $next) {
             Store::mergeTags(['term:'.$this->id()]);
+
+            return $next($augmented);
         });
 
-        app(Variables::class)::hook('augmented', function () {
+        app(Variables::class)::hook('augmented', function ($augmented, $next) {
             Store::mergeTags(['global:'.$this->globalSet()->handle()]);
+
+            return $next($augmented);
         });
     }
 
     private function setupCollectionHooks()
     {
-        Tags\Collection\Collection::hook('init', function () {
+        Tags\Collection\Collection::hook('init', function ($value, $next) {
             $handle = $this->params->get('from') ? 'collection:'.$this->params->get('from') : $this->tag;
             Store::mergeTags([$handle]);
+
+            return $next($value);
         });
 
         return $this;
@@ -77,9 +87,11 @@ class AutoCache
 
     private function setupNavHooks()
     {
-        Tags\Nav::hook('init', function () {
+        Tags\Nav::hook('init', function ($value, $next) {
             $handle = $this->params->get('handle') ? 'nav:'.$this->params->get('handle') : $this->tag;
             Store::mergeTags([$handle]);
+
+            return $next($value);
         });
 
         return $this;
