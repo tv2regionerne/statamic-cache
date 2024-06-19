@@ -122,7 +122,9 @@ class Manager
                 }
             });
 
-        $this->invalidateModels($query->get());
+        $query->chunk(100, function ($models) {
+            $this->invalidateModels($models);
+        });
 
         return $this;
     }
