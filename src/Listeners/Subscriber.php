@@ -3,7 +3,7 @@
 namespace Tv2regionerne\StatamicCache\Listeners;
 
 use Statamic\Events;
-use Tv2regionerne\StatamicCache\Facades\Store;use Tv2regionerne\StatamicCache\Jobs\InvalidateAutoCache;
+use Tv2regionerne\StatamicCache\Jobs\InvalidateAutoCache;
 
 class Subscriber
 {
