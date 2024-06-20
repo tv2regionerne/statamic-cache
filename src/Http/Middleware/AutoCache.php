@@ -35,8 +35,12 @@ class AutoCache
             return $response;
         }
 
-        if ($response->wasStaticallyCached()) {
-            return $response;
+        try {
+            if ($response->wasStaticallyCached()) {
+                return $response;
+            }
+        } catch (\Exception $exception) {
+
         }
 
         Store::addKeyMappingData($key);
