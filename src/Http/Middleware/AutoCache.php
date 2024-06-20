@@ -31,7 +31,11 @@ class AutoCache
 
         Store::removeWatcher($key);
 
-        if (method_exists($response, 'wasStaticallyCached') && $response->wasStaticallyCached()) {
+        if (!method_exists($response, 'wasStaticallyCached')) {
+            return $response;
+        }
+
+        if ($response->wasStaticallyCached()) {
             return $response;
         }
 
