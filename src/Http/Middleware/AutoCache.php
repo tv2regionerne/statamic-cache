@@ -31,6 +31,10 @@ class AutoCache
 
         Store::removeWatcher($key);
 
+        if ($response->wasStaticallyCached()) {
+            return $response;
+        }
+
         Store::addKeyMappingData($key);
 
         return $response;
