@@ -121,7 +121,6 @@ class Manager
                     $query->{($index == 0 ? 'where' : 'orWhere').'JsonContains'}('content', [$id]);
                 }
             });
-
         $query->chunk(100, function ($models) {
             $this->invalidateModels($models);
         });
@@ -133,7 +132,5 @@ class Manager
     {
         $cacher = app(Cacher::class);
         $cacher->invalidateUrls($models->pluck('url')->all());
-
-        $models->each->delete();
     }
 }
