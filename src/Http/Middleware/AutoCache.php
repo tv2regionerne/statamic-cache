@@ -3,6 +3,7 @@
 namespace Tv2regionerne\StatamicCache\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\Response;
 use Statamic\Contracts\Assets\Asset;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Contracts\Globals\Variables;
@@ -27,21 +28,25 @@ class AutoCache
 
         Store::addWatcher($key);
 
+        /** @var Response $response */
         $response = $next($request);
 
         Store::removeWatcher($key);
 
         if (!is_callable([$response, 'wasStaticallyCached'])) {
+            $response->headers->add(['x-statamic-cache' => 'not-available']);
             return $response;
         }
 
         try {
             if ($response->wasStaticallyCached()) {
+                $response->headers->add(['x-statamic-cache' => 'hit']);
                 return $response;
             }
         } catch (\Exception $exception) {
 
         }
+        $response->headers->add(['x-statamic-cache' => 'miss']);
 
         Store::addKeyMappingData($key);
 
