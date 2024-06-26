@@ -135,22 +135,13 @@ class Manager
 
     public function invalidateModels($models): void
     {
-        /** @var ApplicationCacher $cacher */
-        $cacher = app(Cacher::class);
         $manager = app()->make(StaticCacheManager::class);
         $cache = $manager->cacheStore();
 
-        $models->each(function(Autocache $model) use ($cacher, $cache) {
+        $models->each(function(Autocache $model) use ($cache) {
             $model->delete();
-            $parsed = parse_url($model->url);
-            list($url, $domain) = [
-                Arr::get($parsed, 'path', '/'),
-                $parsed['scheme'].'://'.$parsed['host'],
-            ];
             $key = md5($model->url);
             $cache->forget('static-cache:responses:'.$key);
-            $cacher->forgetUrl($key);
-            UrlInvalidated::dispatch($url, $domain);
         } );
     }
 }
