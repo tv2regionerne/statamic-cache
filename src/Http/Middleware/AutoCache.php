@@ -33,14 +33,16 @@ class AutoCache
 
         Store::removeWatcher($key);
 
-        if (!is_callable([$response, 'wasStaticallyCached'])) {
+        if (! is_callable([$response, 'wasStaticallyCached'])) {
             $response->headers->add(['x-statamic-cache' => 'not-available']);
+
             return $response;
         }
 
         try {
             if ($response->wasStaticallyCached()) {
                 $response->headers->add(['x-statamic-cache' => 'hit']);
+
                 return $response;
             }
         } catch (\Exception $exception) {
