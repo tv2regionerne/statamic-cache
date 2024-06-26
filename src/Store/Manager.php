@@ -4,6 +4,7 @@ namespace Tv2regionerne\StatamicCache\Store;
 
 use Livewire\Livewire;
 use Statamic\Facades\URL;
+use Statamic\StaticCaching\Cacher;
 use Statamic\StaticCaching\StaticCacheManager;
 use Tv2regionerne\StatamicCache\Jobs\InvalidateAutoCacheChunk;
 use Tv2regionerne\StatamicCache\Models\Autocache;
