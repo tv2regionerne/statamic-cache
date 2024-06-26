@@ -131,13 +131,11 @@ class Manager
 
     public function invalidateModels($models): void
     {
-        $manager = app()->make(StaticCacheManager::class);
-        $cache = $manager->cacheStore();
+        $cacher = app(Cacher::class);
 
-        $models->each(function (Autocache $model) use ($cache) {
+        $models->each(function (Autocache $model) use ($cacher) {
             $model->delete();
-            $key = md5($model->url);
-            $cache->forget('static-cache:responses:'.$key);
+            $cacher->invalidateUrl($model->url);
         });
     }
 }
