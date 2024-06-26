@@ -3,8 +3,13 @@
 namespace Tv2regionerne\StatamicCache\Store;
 
 use Livewire\Livewire;
+use Statamic\Events\UrlInvalidated;
 use Statamic\Facades\URL;
 use Statamic\StaticCaching\Cacher;
+use Statamic\StaticCaching\Cachers\ApplicationCacher;
+use Statamic\StaticCaching\StaticCacheManager;
+use Statamic\Support\Arr;
+use Tv2regionerne\StatamicCache\Jobs\InvalidateAutoCacheChunk;
 use Tv2regionerne\StatamicCache\Models\Autocache;
 
 class Manager
@@ -52,7 +57,7 @@ class Manager
         return $this->tags[$key] ?? [];
     }
 
-    public function cacheContent($key = 'default')
+    public function cacheContent($key = 'default'): array
     {
         $entryTags = collect($this->entries($key))
             ->transform(function ($entry) {
@@ -66,7 +71,7 @@ class Manager
         return array_merge($entryTags, $tags);
     }
 
-    public function mergeEntries($entries)
+    public function mergeEntries($entries): static
     {
         if (! is_array($entries)) {
             $entries = [$entries];
@@ -82,7 +87,7 @@ class Manager
         return $this;
     }
 
-    public function mergeTags($tags)
+    public function mergeTags($tags): static
     {
         if (! is_array($tags)) {
             $tags = [$tags];
@@ -98,7 +103,7 @@ class Manager
         return $this;
     }
 
-    public function addKeyMappingData($key)
+    public function addKeyMappingData($key): static
     {
         $url = class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent();
 
@@ -113,7 +118,7 @@ class Manager
         return $this;
     }
 
-    public function invalidateContent($ids)
+    public function invalidateContent($ids): static
     {
         $query = Autocache::query()
             ->where(function ($query) use ($ids) {
@@ -122,15 +127,30 @@ class Manager
                 }
             });
         $query->chunk(100, function ($models) {
-            $this->invalidateModels($models);
+            InvalidateAutoCacheChunk::dispatch($models);
         });
 
         return $this;
     }
 
-    private function invalidateModels($models)
+    public function invalidateModels($models): void
     {
+        /** @var ApplicationCacher $cacher */
         $cacher = app(Cacher::class);
-        $cacher->invalidateUrls($models->pluck('url')->all());
+        $manager = app()->make(StaticCacheManager::class);
+        $cache = $manager->cacheStore();
+
+        $models->each(function(Autocache $model) use ($cacher, $cache) {
+            $model->delete();
+            $parsed = parse_url($model->url);
+            list($url, $domain) = [
+                Arr::get($parsed, 'path', '/'),
+                $parsed['scheme'].'://'.$parsed['host'],
+            ];
+            $key = md5($model->url);
+            $cache->forget('static-cache:responses:'.$key);
+            $cacher->forgetUrl($key);
+            UrlInvalidated::dispatch($url, $domain);
+        } );
     }
 }
