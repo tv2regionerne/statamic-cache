@@ -3,12 +3,8 @@
 namespace Tv2regionerne\StatamicCache\Store;
 
 use Livewire\Livewire;
-use Statamic\Events\UrlInvalidated;
 use Statamic\Facades\URL;
-use Statamic\StaticCaching\Cacher;
-use Statamic\StaticCaching\Cachers\ApplicationCacher;
 use Statamic\StaticCaching\StaticCacheManager;
-use Statamic\Support\Arr;
 use Tv2regionerne\StatamicCache\Jobs\InvalidateAutoCacheChunk;
 use Tv2regionerne\StatamicCache\Models\Autocache;
 
@@ -138,10 +134,10 @@ class Manager
         $manager = app()->make(StaticCacheManager::class);
         $cache = $manager->cacheStore();
 
-        $models->each(function(Autocache $model) use ($cache) {
+        $models->each(function (Autocache $model) use ($cache) {
             $model->delete();
             $key = md5($model->url);
             $cache->forget('static-cache:responses:'.$key);
-        } );
+        });
     }
 }
