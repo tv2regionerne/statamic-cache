@@ -18,16 +18,6 @@ class ServiceProvider extends AddonServiceProvider
         Subscriber::class,
     ];
 
-    public function register()
-    {
-        parent::register();
-        $this->app->booting(function () {
-            StaticCache::extend('redis_with_database', function ($app, $config) {
-                return new Cacher\Cacher(StaticCache::cacheStore(), $config);
-            });
-        });
-    }
-
     public function bootAddon()
     {
         $this->mergeConfigFrom(__DIR__.'/../config/statamic-cache.php', 'statamic-cache');

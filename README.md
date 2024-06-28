@@ -51,3 +51,23 @@ Make sure you also invalidate the tag in a listener:
 ```php
 Store::invalidateContent(['my_tag:id']);
 ```
+
+### Custom cache driver with database index
+Run the migrations to add the static_cache table.  
+Add this section to your AppServiceProvider's register function.
+```php
+$this->app->booting(function () {
+    StaticCache::extend('redis_with_database', function ($app, $config) {
+        return new \Tv2regionerne\StatamicCache\Cacher\Cacher(StaticCache::cacheStore(), $config);
+    });
+});
+```
+
+Change the half measure static cache driver to use `redis_with_database`
+```php
+'half' => [
+    'driver' => 'redis_with_database',
+    'expiry' => null,
+],
+
+```
