@@ -2,7 +2,9 @@
 
 namespace Tv2regionerne\StatamicCache;
 
+use Statamic\Facades\StaticCache;
 use Statamic\Providers\AddonServiceProvider;
+use Tv2regionerne\StatamicCache\Cacher\Cacher;
 use Tv2regionerne\StatamicCache\Listeners\Subscriber;
 
 class ServiceProvider extends AddonServiceProvider
@@ -16,6 +18,12 @@ class ServiceProvider extends AddonServiceProvider
     protected $subscribe = [
         Subscriber::class,
     ];
+
+    public function register()
+    {
+        parent::register();
+
+    }
 
     public function bootAddon()
     {
