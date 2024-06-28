@@ -12,11 +12,15 @@ class Cacher extends ApplicationCacher
     {
         $domain = $domain ?: $this->getBaseUrl();
 
-        StaticCache::create([
-            'key' => $key,
-            'domain' => $domain,
-            'url' => $url,
-        ]);
+        StaticCache::firstOrCreate(
+            [
+                'key' => $key,
+            ],
+            [
+                'domain' => $domain,
+                'url' => $url,
+            ]
+        );
     }
 
     public function forgetUrl($key, $domain = null)
