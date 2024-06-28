@@ -2,6 +2,7 @@
 
 namespace Tv2regionerne\StatamicCache;
 
+use Statamic\Facades\StaticCache;
 use Statamic\Providers\AddonServiceProvider;
 use Tv2regionerne\StatamicCache\Listeners\Subscriber;
 
@@ -16,6 +17,16 @@ class ServiceProvider extends AddonServiceProvider
     protected $subscribe = [
         Subscriber::class,
     ];
+
+    public function register()
+    {
+        parent::register();
+        $this->app->booting(function () {
+            StaticCache::extend('redis_with_database', function ($app, $config) {
+                return new Cacher\Cacher(StaticCache::cacheStore(), $config);
+            });
+        });
+    }
 
     public function bootAddon()
     {
