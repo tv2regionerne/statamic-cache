@@ -2,14 +2,12 @@
 
 namespace Tv2regionerne\StatamicCache\Cacher;
 
-use Illuminate\Cache\RedisStore;
 use Statamic\Events\UrlInvalidated;
 use Statamic\StaticCaching\Cachers\ApplicationCacher;
 use Tv2regionerne\StatamicCache\Models\StaticCache;
 
 class Cacher extends ApplicationCacher
 {
-
     public function cacheUrl($key, $url, $domain = null)
     {
         $domain = $domain ?: $this->getBaseUrl();
@@ -62,7 +60,7 @@ class Cacher extends ApplicationCacher
 
     public function flush()
     {
-        StaticCache::each(function($model){
+        StaticCache::each(function ($model) {
             $model->delete();
             $this->cache->forget($this->normalizeKey('responses:'.$model->url));
         });
