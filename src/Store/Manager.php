@@ -2,7 +2,6 @@
 
 namespace Tv2regionerne\StatamicCache\Store;
 
-use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 use Statamic\Facades\URL;
 use Statamic\StaticCaching\Cacher;
