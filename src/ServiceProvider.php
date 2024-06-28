@@ -22,7 +22,11 @@ class ServiceProvider extends AddonServiceProvider
     public function register()
     {
         parent::register();
-
+        $this->app->booting(function () {
+            StaticCache::extend('redis_with_database', function ($app, $config) {
+                return new \Tv2regionerne\StatamicCache\Cacher\Cacher(StaticCache::cacheStore(), $config);
+            });
+        });
     }
 
     public function bootAddon()
