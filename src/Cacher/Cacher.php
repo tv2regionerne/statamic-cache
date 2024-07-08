@@ -64,9 +64,7 @@ class Cacher extends ApplicationCacher
 
     public function flush()
     {
-        StaticCache::each(function ($model) {
-            $model->delete();
-            $this->cache->forget($this->normalizeKey('responses:'.$model->url));
-        });
+        StaticCache::query()->truncate();
+        $this->cache->flush();
     }
 }
