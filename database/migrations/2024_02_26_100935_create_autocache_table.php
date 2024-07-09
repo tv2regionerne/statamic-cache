@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('autocache', function (Blueprint $table) {
-            $table->uuid('id')->unique()->index();
+            $table->uuid('id')->primary();
             $table->jsonb('content');
             $table->string('url');
             $table->timestamps();
