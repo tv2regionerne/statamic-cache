@@ -3,22 +3,21 @@
 namespace Tv2regionerne\StatamicCache\Jobs;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Tv2regionerne\StatamicCache\Facades\Store;
 
-class InvalidateAutoCache implements ShouldQueue
+class InvalidateAutoCache implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(public array $tags)
-    {
-    }
+    public function __construct(public array $tags) {}
 
     /**
      * Execute the job.
@@ -26,5 +25,13 @@ class InvalidateAutoCache implements ShouldQueue
     public function handle(): void
     {
         Store::invalidateContent($this->tags);
+    }
+
+    /**
+     * Get the unique ID for the job.
+     */
+    public function uniqueId(): string
+    {
+        return md5(json_encode($this->tags));
     }
 }

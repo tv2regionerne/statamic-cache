@@ -7,7 +7,7 @@ use Statamic\Facades\URL;
 use Statamic\StaticCaching\Cacher;
 use Statamic\StaticCaching\StaticCacheManager;
 use Statamic\Support\Arr;
-use Tv2regionerne\StatamicCache\Jobs\InvalidateAutoCacheChunk;
+use Tv2regionerne\StatamicCache\Jobs\InvalidateAutoCacheModel;
 use Tv2regionerne\StatamicCache\Models\Autocache;
 
 class Manager
@@ -118,31 +118,36 @@ class Manager
 
     public function invalidateContent($ids): static
     {
-        $query = Autocache::query()
+        Autocache::query()
             ->where(function ($query) use ($ids) {
                 foreach ($ids as $index => $id) {
                     $query->{($index == 0 ? 'where' : 'orWhere').'JsonContains'}('content', [$id]);
                 }
+            })
+            ->chunk(100, function ($models) {
+                $models->each(fn ($model) => InvalidateAutoCacheModel::dispatch($model));
             });
-        $query->chunk(100, function ($models) {
-            InvalidateAutoCacheChunk::dispatch($models);
-        });
 
         return $this;
     }
 
+    /* @deprecated - use invalidateModel instead */
     public function invalidateModels($models): void
     {
-        $cacher = app(Cacher::class);
-        $manager = app()->make(StaticCacheManager::class);
-        $cache = $manager->cacheStore();
+        $models->each(fn ($model) => $this->invalidateModel($model));
+    }
 
-        $models->each(function (Autocache $model) use ($cacher, $cache) {
-            $parsed = parse_url($model->url);
-            $url = Arr::get($parsed, 'path', '/');
-            $model->delete();
-            $cacher->invalidateUrl($url);
-            $cache->forget('static-cache:responses:'.md5($model->url));
-        });
+    public function invalidateModel(Autocache $model): void
+    {
+        $cacher = app(Cacher::class);
+        $cache = app()->make(StaticCacheManager::class)->cacheStore();
+
+        $parsed = parse_url($model->url);
+        $url = Arr::get($parsed, 'path', '/');
+
+        $model->delete();
+
+        $cacher->invalidateUrl($url);
+        $cache->forget('static-cache:responses:'.md5($model->url));
     }
 }
