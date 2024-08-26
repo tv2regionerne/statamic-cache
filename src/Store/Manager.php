@@ -2,7 +2,9 @@
 
 namespace Tv2regionerne\StatamicCache\Store;
 
+use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
+use Statamic\Events\UrlInvalidated;
 use Statamic\Facades\URL;
 use Statamic\StaticCaching\Cacher;
 use Statamic\StaticCaching\StaticCacheManager;
@@ -116,6 +118,15 @@ class Manager
         return $this;
     }
 
+    public function getMappingData(?string $url = null): bool
+    {
+        if (! $url) {
+            $url = class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent();
+        }
+
+        return Autocache::where('url', $url)->get();
+    }
+
     public function invalidateContent($ids): static
     {
         Autocache::query()
@@ -139,15 +150,24 @@ class Manager
 
     public function invalidateModel(Autocache $model): void
     {
+        Event::listen(function (UrlInvalidated $event) use ($model) {
+            if ($event->url == $model->url) {
+                $model->delete();
+            }
+        });
+
+        $this->invalidateCacheForUrl($model->url);
+    }
+
+    public function invalidateCacheForUrl(string $url): void
+    {
         $cacher = app(Cacher::class);
-        $cache = app()->make(StaticCacheManager::class)->cacheStore();
+        $manager = app()->make(StaticCacheManager::class);
+        $cache = $manager->cacheStore();
 
-        $parsed = parse_url($model->url);
-        $url = Arr::get($parsed, 'path', '/');
+        $parsed = parse_url($url);
 
-        $model->delete();
-
-        $cacher->invalidateUrl($url);
-        $cache->forget('static-cache:responses:'.md5($model->url));
+        $cacher->invalidateUrl(Arr::get($parsed, 'path', '/'));
+        $cache->forget('static-cache:responses:'.md5($url));
     }
 }
