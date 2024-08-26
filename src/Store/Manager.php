@@ -2,7 +2,9 @@
 
 namespace Tv2regionerne\StatamicCache\Store;
 
+use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
+use Statamic\Events\UrlInvalidated;
 use Statamic\Facades\URL;
 use Statamic\StaticCaching\Cacher;
 use Statamic\StaticCaching\StaticCacheManager;
@@ -143,7 +145,11 @@ class Manager
     public function invalidateModels($models): void
     {
         $models->each(function (Autocache $model) {
-            $model->delete();
+            Event::listen(function (UrlInvalidated $event) use ($model) {
+                if ($event->url == $model->url) {
+                    $model->delete();
+                }
+            });
 
             $this->invalidateCacheForUrl($model->url);
         });
