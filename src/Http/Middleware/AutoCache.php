@@ -7,6 +7,7 @@ use Illuminate\Http\Response;
 use Statamic\Contracts\Assets\Asset;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Contracts\Globals\Variables;
+use Statamic\Facades\URL;
 use Statamic\Tags;
 use Statamic\Taxonomies\LocalizedTerm;
 use Tv2regionerne\StatamicCache\Facades\Store;
@@ -36,6 +37,8 @@ class AutoCache
         if (! is_callable([$response, 'wasStaticallyCached'])) {
             $response->headers->add(['x-statamic-cache' => 'not-available']);
 
+            $this->removeStaticCacheIfNoDataIsStored();
+
             return $response;
         }
 
@@ -43,11 +46,14 @@ class AutoCache
             if ($response->wasStaticallyCached()) {
                 $response->headers->add(['x-statamic-cache' => 'hit']);
 
+                $this->removeStaticCacheIfNoDataIsStored();
+
                 return $response;
             }
         } catch (\Exception $exception) {
 
         }
+
         $response->headers->add(['x-statamic-cache' => 'miss']);
 
         Store::addKeyMappingData($key);
@@ -63,6 +69,15 @@ class AutoCache
 
         // Only GET requests. This disables the cache during live preview.
         return $request->method() === 'GET' && substr($request->path(), 0, 2) != '!/';
+    }
+
+    private function removeStaticCacheIfNoDataIsStored()
+    {
+        if (Store::hasMappingData()) {
+            return;
+        }
+
+        Store::invalidateCacheForUrl(URL::getCurrent());
     }
 
     private function setupAugmentationHooks()

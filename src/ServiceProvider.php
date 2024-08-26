@@ -2,7 +2,6 @@
 
 namespace Tv2regionerne\StatamicCache;
 
-use Statamic\Facades\StaticCache;
 use Statamic\Providers\AddonServiceProvider;
 use Tv2regionerne\StatamicCache\Listeners\Subscriber;
 
