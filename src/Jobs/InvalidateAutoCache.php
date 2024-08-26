@@ -16,9 +16,7 @@ class InvalidateAutoCache implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public array $tags)
-    {
-    }
+    public function __construct(public array $tags) {}
 
     /**
      * Execute the job.

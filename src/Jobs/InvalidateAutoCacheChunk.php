@@ -16,9 +16,7 @@ class InvalidateAutoCacheChunk implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public $models)
-    {
-    }
+    public function __construct(public $models) {}
 
     /**
      * Execute the job.
