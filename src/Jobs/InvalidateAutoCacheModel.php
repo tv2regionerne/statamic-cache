@@ -17,7 +17,9 @@ class InvalidateAutoCacheModel implements ShouldBeUnique, ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public $models) {}
+    public function __construct(public $models)
+    {
+    }
 
     /**
      * Execute the job.
