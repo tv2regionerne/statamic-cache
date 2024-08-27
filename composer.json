@@ -5,6 +5,11 @@
             "Tv2regionerne\\StatamicCache\\": "src"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tv2regionerne\\StatamicCache\\Tests\\": "tests"
+        }
+    },
     "require": {
         "php": "^8.2",
         "pixelfear/composer-dist-plugin": "^0.1.5",
@@ -28,6 +33,14 @@
                 "Tv2regionerne\\StatamicCache\\ServiceProvider"
             ]
         }
+    },
+    "scripts": {
+        "pint": [
+            "php -d memory_limit=-1 ./vendor/bin/pint"
+        ],
+        "test": [
+            "php -d memory_limit=-1 ./vendor/bin/pest"
+        ]
     },
     "config": {
         "allow-plugins": {

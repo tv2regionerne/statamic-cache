@@ -32,6 +32,6 @@ class InvalidateModel implements ShouldBeUnique, ShouldQueue
      */
     public function uniqueId(): string
     {
-        return md5($model->url);
+        return md5($this->model->url);
     }
 }

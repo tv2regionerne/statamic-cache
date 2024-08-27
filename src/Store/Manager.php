@@ -112,7 +112,7 @@ class Manager
                 'url' => $url,
             ], [
                 'key' => md5($url),
-                'domain' => app(Cacher::class)->getBaseUrl(),
+                'domain' => app(Cacher::class)->getBaseUrl() ?? '',
                 'content' => $this->cacheContent($key),
             ]);
         }
