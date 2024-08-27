@@ -12,15 +12,12 @@ class Cacher extends ApplicationCacher
     {
         $domain = $domain ?: $this->getBaseUrl();
 
-        StaticCache::firstOrCreate(
-            [
-                'key' => $key,
-            ],
-            [
-                'domain' => $domain,
-                'url' => $url,
-            ]
-        );
+        StaticCache::updateOrCreate([
+            'url' => $url,
+        ], [
+            'key' => $key,
+            'domain' => $domain,
+        ]);
     }
 
     public function forgetUrl($key, $domain = null)
@@ -34,17 +31,16 @@ class Cacher extends ApplicationCacher
     {
         $domain = $domain ?: $this->getBaseUrl();
 
-        $models = StaticCache::query()
+        StaticCache::query()
             ->where('domain', $domain)
             ->where(fn ($q) => $q
                 ->where('url', $url)
                 ->orWhere('url', 'like', $url.'?%'))
-            ->get();
-
-        $models->each(function ($model) {
-            $this->cache->forget($this->normalizeKey('responses:'.$model->key));
-            $model->delete();
-        });
+            ->get()
+            ->each(function ($model) {
+                $this->cache->forget($this->normalizeKey('responses:'.$model->key));
+                $model->delete();
+            });
 
         UrlInvalidated::dispatch($url, $domain);
     }
@@ -65,6 +61,7 @@ class Cacher extends ApplicationCacher
     public function flush()
     {
         StaticCache::query()->truncate();
+
         $this->cache->flush();
     }
 }

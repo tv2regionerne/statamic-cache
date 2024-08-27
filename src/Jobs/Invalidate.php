@@ -10,23 +10,21 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Tv2regionerne\StatamicCache\Facades\Store;
 
-class InvalidateAutoCacheModel implements ShouldBeUnique, ShouldQueue
+class Invalidate implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(public $model)
-    {
-    }
+    public function __construct(public array $tags) {}
 
     /**
      * Execute the job.
      */
     public function handle(): void
     {
-        Store::invalidateModel($this->model);
+        Store::invalidateContent($this->tags);
     }
 
     /**
@@ -34,6 +32,6 @@ class InvalidateAutoCacheModel implements ShouldBeUnique, ShouldQueue
      */
     public function uniqueId(): string
     {
-        return md5($model->url);
+        return md5(json_encode($this->tags));
     }
 }

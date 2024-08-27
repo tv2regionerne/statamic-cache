@@ -9,8 +9,8 @@ use Statamic\Facades\URL;
 use Statamic\StaticCaching\Cacher;
 use Statamic\StaticCaching\StaticCacheManager;
 use Statamic\Support\Arr;
-use Tv2regionerne\StatamicCache\Jobs\InvalidateAutoCacheModel;
-use Tv2regionerne\StatamicCache\Models\Autocache;
+use Tv2regionerne\StatamicCache\Jobs\InvalidateModel;
+use Tv2regionerne\StatamicCache\Models\StaticCache;
 
 class Manager
 {
@@ -108,9 +108,11 @@ class Manager
         $url = class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent();
 
         if (! empty($this->cacheContent($key))) {
-            Autocache::updateOrCreate([
+            StaticCache::updateOrCreate([
                 'url' => $url,
             ], [
+                'key' => md5($url),
+                'domain' => app(Cacher::class)->getBaseUrl(),
                 'content' => $this->cacheContent($key),
             ]);
         }
@@ -124,19 +126,19 @@ class Manager
             $url = class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent();
         }
 
-        return Autocache::where('url', $url)->exists();
+        return StaticCache::where('url', $url)->exists();
     }
 
     public function invalidateContent($ids): static
     {
-        Autocache::query()
+        StaticCache::query()
             ->where(function ($query) use ($ids) {
                 foreach ($ids as $index => $id) {
                     $query->{($index == 0 ? 'where' : 'orWhere').'JsonContains'}('content', [$id]);
                 }
             })
             ->chunk(100, function ($models) {
-                $models->each(fn ($model) => InvalidateAutoCacheModel::dispatch($model));
+                $models->each(fn ($model) => InvalidateModel::dispatch($model));
             });
 
         return $this;
@@ -148,7 +150,7 @@ class Manager
         $models->each(fn ($model) => $this->invalidateModel($model));
     }
 
-    public function invalidateModel(Autocache $model): void
+    public function invalidateModel(StaticCache $model): void
     {
         Event::listen(function (UrlInvalidated $event) use ($model) {
             if ($event->url == $model->url) {

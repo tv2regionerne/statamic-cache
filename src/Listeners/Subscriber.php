@@ -3,7 +3,7 @@
 namespace Tv2regionerne\StatamicCache\Listeners;
 
 use Statamic\Events;
-use Tv2regionerne\StatamicCache\Jobs\InvalidateAutoCache;
+use Tv2regionerne\StatamicCache\Jobs\Invalidate;
 
 class Subscriber
 {
@@ -37,7 +37,7 @@ class Subscriber
             'asset:'.$event->asset->id(),
         ];
 
-        InvalidateAutoCache::dispatch($tags);
+        Invalidate::dispatch($tags);
     }
 
     public function invalidateEntry($event)
@@ -51,7 +51,7 @@ class Subscriber
             'collection:'.$collectionHandle,
         ];
 
-        InvalidateAutoCache::dispatch($tags);
+        Invalidate::dispatch($tags);
     }
 
     public function invalidateGlobal($event)
@@ -60,7 +60,7 @@ class Subscriber
             'global:'.($event->globals ?? $event->variables->globalSet())->handle(),
         ];
 
-        InvalidateAutoCache::dispatch($tags);
+        Invalidate::dispatch($tags);
     }
 
     public function invalidateNav($event)
@@ -69,7 +69,7 @@ class Subscriber
             'nav:'.($event->nav ?? $event->tree)->handle(),
         ];
 
-        InvalidateAutoCache::dispatch($tags);
+        Invalidate::dispatch($tags);
     }
 
     public function invalidateTerm($event)
@@ -78,6 +78,6 @@ class Subscriber
             'term:'.$event->term->id(),
         ];
 
-        InvalidateAutoCache::dispatch($tags);
+        Invalidate::dispatch($tags);
     }
 }
