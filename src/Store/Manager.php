@@ -118,13 +118,13 @@ class Manager
         return $this;
     }
 
-    public function getMappingData(?string $url = null): bool
+    public function hasMappingData(?string $url = null): bool
     {
         if (! $url) {
             $url = class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent();
         }
 
-        return Autocache::where('url', $url)->get();
+        return Autocache::where('url', $url)->exists();
     }
 
     public function invalidateContent($ids): static
