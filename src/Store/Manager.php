@@ -126,7 +126,9 @@ class Manager
             $url = class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent();
         }
 
-        return StaticCache::where('url', $url)->exists();
+        $model = StaticCache::where('url', $url)->first();
+
+        return ($model && $model->content);
     }
 
     public function invalidateContent($ids): static
