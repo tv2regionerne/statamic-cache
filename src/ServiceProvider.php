@@ -2,6 +2,7 @@
 
 namespace Tv2regionerne\StatamicCache;
 
+use Statamic\Facades\StaticCache;
 use Statamic\Providers\AddonServiceProvider;
 use Tv2regionerne\StatamicCache\Listeners\Subscriber;
 
@@ -26,5 +27,9 @@ class ServiceProvider extends AddonServiceProvider
         ], 'statamic-cache-config');
 
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+
+        StaticCache::extend('redis_with_database', function ($app, $config) {
+            return new \Tv2regionerne\StatamicCache\Cacher\Cacher(StaticCache::cacheStore(), $config);
+        });
     }
 }
