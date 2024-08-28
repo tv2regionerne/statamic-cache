@@ -17,9 +17,7 @@ class InvalidateModel implements ShouldBeUnique, ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public $model)
-    {
-    }
+    public function __construct(public $model) {}
 
     /**
      * Execute the job.
