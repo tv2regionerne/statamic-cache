@@ -107,12 +107,14 @@ class Manager
     {
         $url = class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent();
 
+        [$url, $domain] = $this->splitUrlAndDomain($url);
+
         if (! empty($this->cacheContent($key))) {
             StaticCache::updateOrCreate([
                 'url' => $url,
             ], [
                 'key' => md5($url),
-                'domain' => app(Cacher::class)->getBaseUrl() ?? '',
+                'domain' => $domain ?? '',
                 'content' => $this->cacheContent($key),
             ]);
         }
@@ -126,7 +128,9 @@ class Manager
             $url = class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent();
         }
 
-        $model = StaticCache::where('url', $url)->first();
+        [$url, $domain] = $this->splitUrlAndDomain($url);
+
+        $model = StaticCache::where(['url' => $url, 'domain' => $domain])->first();
 
         return $model && $model->content;
     }
@@ -169,9 +173,23 @@ class Manager
         $manager = app()->make(StaticCacheManager::class);
         $cache = $manager->cacheStore();
 
+        [$url, $domain] = $this->splitUrlAndDomain($url);
+
+        $cache->forget('static-cache:responses:'.md5($url));
+    }
+
+    private function splitUrlAndDomain(string $url)
+    {
         $parsed = parse_url($url);
 
-        $cacher->invalidateUrl(Arr::get($parsed, 'path', '/'));
-        $cache->forget('static-cache:responses:'.md5($url));
+        if (str_contains($url, '://')) {
+            $domain = $parsed['scheme'].'://'.$parsed['host'];
+        } else {
+            $domain = app(Cacher::class)->getBaseUrl();
+        }
+
+        $url = Arr::get($parsed, 'path', '/');
+
+        return [$url, $domain ?? ''];
     }
 }
