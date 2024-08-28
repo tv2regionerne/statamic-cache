@@ -54,16 +54,9 @@ Store::invalidateContent(['my_tag:id']);
 
 ### Custom cache driver with database index
 Run the migrations to add the static_cache table.  
-Add this section to your AppServiceProvider's register function.
-```php
-$this->app->booting(function () {
-    StaticCache::extend('redis_with_database', function ($app, $config) {
-        return new \Tv2regionerne\StatamicCache\Cacher\Cacher(StaticCache::cacheStore(), $config);
-    });
-});
-```
 
-Change the half measure static cache driver to use `redis_with_database`
+This add-on will automatically add a `redis_with_database` cache driver to your Statamic install. To use it change the half measure static cache driver in `config/statamic/static_caching.php` to use `redis_with_database`, and ensure `statamic.static_caching.strategy` is set to `half`.
+
 ```php
 'half' => [
     'driver' => 'redis_with_database',
