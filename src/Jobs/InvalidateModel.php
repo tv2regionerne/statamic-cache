@@ -25,7 +25,7 @@ class InvalidateModel implements ShouldBeUnique, ShouldQueue
     {
         return [
             'url:'.$this->model->url,
-            'id:'.$this->model->id
+            'id:'.$this->model->id,
         ];
     }
 
