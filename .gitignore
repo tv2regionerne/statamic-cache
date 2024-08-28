@@ -3,3 +3,4 @@ vendor
 mix-manifest.json
 .idea
 composer.lock
+.phpunit.cache/
