@@ -3,7 +3,6 @@
 uses(\Tv2regionerne\StatamicCache\Tests\TestCase::class);
 
 use Illuminate\Support\Facades\Queue;
-use Statamic\StaticCaching\Cacher;
 use Tv2regionerne\StatamicCache\Facades\Store;
 use Tv2regionerne\StatamicCache\Models\StaticCache;
 
