@@ -3,6 +3,7 @@
 uses(\Tv2regionerne\StatamicCache\Tests\TestCase::class);
 
 use Illuminate\Support\Facades\Queue;
+use Statamic\StaticCaching\Cacher;
 use Tv2regionerne\StatamicCache\Facades\Store;
 use Tv2regionerne\StatamicCache\Models\StaticCache;
 
@@ -44,7 +45,11 @@ it('it doesn\'t an invalidate model job when there is no valid tag', function ()
     Queue::assertNotPushed(Tv2regionerne\StatamicCache\Jobs\InvalidateModel::class);
 });
 
-it('it flushes the cache when over the limit', function () {
+it('it flushes the cache when over the config limit', function () {
+    config()->set('statamic-cache.flush_cache_limit', 1);
+    config()->set('statamic.static_caching.strategy', 'half');
+    config()->set('statamic.static_caching.strategies.half.driver', 'redis_with_database');
+
     Queue::fake();
 
     StaticCache::insert([
@@ -52,13 +57,19 @@ it('it flushes the cache when over the limit', function () {
             'key' => md5('/news'),
             'url' => '/news',
             'domain' => 'http://localhost',
-            'content' => ['some:tag'],
+            'content' => json_encode(['some:tag']),
         ],
         [
             'key' => md5('/news/two'),
             'url' => '/news/two',
             'domain' => 'http://localhost',
-            'content' => ['some:tag'],
+            'content' => json_encode(['some:tag']),
+        ],
+        [
+            'key' => md5('/news/three'),
+            'url' => '/news/three',
+            'domain' => 'http://localhost',
+            'content' => json_encode(['other:tag']),
         ],
     ]);
 
