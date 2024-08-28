@@ -10,7 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Tv2regionerne\StatamicCache\Facades\Store;
 
-class InvalidateAutoCacheModel implements ShouldBeUnique, ShouldQueue
+class InvalidateModel implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -34,6 +34,6 @@ class InvalidateAutoCacheModel implements ShouldBeUnique, ShouldQueue
      */
     public function uniqueId(): string
     {
-        return md5($model->url);
+        return md5($this->model->url);
     }
 }

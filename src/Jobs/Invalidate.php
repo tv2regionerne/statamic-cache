@@ -10,7 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Tv2regionerne\StatamicCache\Facades\Store;
 
-class InvalidateAutoCache implements ShouldBeUnique, ShouldQueue
+class Invalidate implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 

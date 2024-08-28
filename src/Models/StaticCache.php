@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class StaticCache extends Model
 {
-    public $timestamps = false;
-
-    protected $table = 'static_cache';
+    protected $casts = [
+        'content' => 'array',
+    ];
 
     protected $guarded = [];
+
+    protected $table = 'static_cache';
 }
