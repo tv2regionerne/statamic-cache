@@ -43,3 +43,38 @@ it('it doesn\'t an invalidate model job when there is no valid tag', function ()
 
     Queue::assertNotPushed(Tv2regionerne\StatamicCache\Jobs\InvalidateModel::class);
 });
+
+it('it flushes the cache when over the config limit', function () {
+    config()->set('statamic-cache.flush_cache_limit', 1);
+    config()->set('statamic.static_caching.strategy', 'half');
+    config()->set('statamic.static_caching.strategies.half.driver', 'redis_with_database');
+
+    Queue::fake();
+
+    StaticCache::insert([
+        [
+            'key' => md5('/news'),
+            'url' => '/news',
+            'domain' => 'http://localhost',
+            'content' => json_encode(['some:tag']),
+        ],
+        [
+            'key' => md5('/news/two'),
+            'url' => '/news/two',
+            'domain' => 'http://localhost',
+            'content' => json_encode(['some:tag']),
+        ],
+        [
+            'key' => md5('/news/three'),
+            'url' => '/news/three',
+            'domain' => 'http://localhost',
+            'content' => json_encode(['other:tag']),
+        ],
+    ]);
+
+    Store::invalidateContent(['some:tag']);
+
+    Queue::assertNotPushed(Tv2regionerne\StatamicCache\Jobs\InvalidateModel::class);
+
+    $this->assertCount(0, StaticCache::all());
+});
