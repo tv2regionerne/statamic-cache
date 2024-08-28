@@ -180,9 +180,15 @@ class Manager
 
     private function splitUrlAndDomain(string $url)
     {
-        $domain = app(Cacher::class)->getBaseUrl();
+        $parsed = parse_url($url);
 
-        $url = Arr::get(parse_url($url), 'path', '/');
+        if (str_contains($url, '://')) {
+            $domain = $parsed['scheme'].'://'.$parsed['host'];
+        } else {
+            $domain = app(Cacher::class)->getBaseUrl();
+        }
+
+        $url = Arr::get($parsed, 'path', '/');
 
         return [$url, $domain ?? ''];
     }
