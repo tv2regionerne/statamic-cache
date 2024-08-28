@@ -21,6 +21,13 @@ class Invalidate implements ShouldBeUnique, ShouldQueue
     {
     }
 
+    public function tags(): array
+    {
+        return collect($this->tags)->unique()->transform(function ($tag) {
+            return 'tag:' . $tag;
+        })->toArray();
+    }
+
     /**
      * Execute the job.
      */
