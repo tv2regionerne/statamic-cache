@@ -43,3 +43,28 @@ it('it doesn\'t an invalidate model job when there is no valid tag', function ()
 
     Queue::assertNotPushed(Tv2regionerne\StatamicCache\Jobs\InvalidateModel::class);
 });
+
+it('it flushes the cache when over the limit', function () {
+    Queue::fake();
+
+    StaticCache::insert([
+        [
+            'key' => md5('/news'),
+            'url' => '/news',
+            'domain' => 'http://localhost',
+            'content' => ['some:tag'],
+        ],
+        [
+            'key' => md5('/news/two'),
+            'url' => '/news/two',
+            'domain' => 'http://localhost',
+            'content' => ['some:tag'],
+        ],
+    ]);
+
+    Store::invalidateContent(['some:tag']);
+
+    Queue::assertNotPushed(Tv2regionerne\StatamicCache\Jobs\InvalidateModel::class);
+
+    $this->assertCount(0, StaticCache::all());
+});

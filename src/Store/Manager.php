@@ -133,12 +133,21 @@ class Manager
 
     public function invalidateContent($ids): static
     {
-        StaticCache::query()
+        $query = StaticCache::query()
             ->where(function ($query) use ($ids) {
                 foreach ($ids as $index => $id) {
                     $query->{($index == 0 ? 'where' : 'orWhere').'JsonContains'}('content', [$id]);
                 }
-            })
+            });
+
+        // if we have enough models, just flush the cache
+        if ($query->count() >= config('statamic-cache.flush_cache_limit', 1000)) {
+            app(Cacher::class)->flush();
+
+            return $this;
+        }
+
+        $query
             ->chunk(100, function ($models) {
                 $models->each(fn ($model) => InvalidateModel::dispatch($model));
             });
