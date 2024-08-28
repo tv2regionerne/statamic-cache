@@ -39,8 +39,12 @@ class Cacher extends ApplicationCacher
             ->get()
             ->each(function ($model) {
                 $this->cache->forget($this->normalizeKey('responses:'.$model->key));
+
                 $model->delete();
             });
+
+        // if we dont have a db entry we should still clear the cache
+        $this->cache->forget($this->normalizeKey('responses:'.$this->makeHash($domain.$url)));
 
         UrlInvalidated::dispatch($url, $domain);
     }
