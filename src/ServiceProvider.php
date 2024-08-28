@@ -27,7 +27,10 @@ class ServiceProvider extends AddonServiceProvider
         ], 'statamic-cache-config');
 
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+    }
 
+    public function register()
+    {
         StaticCache::extend('redis_with_database', function ($app, $config) {
             return new \Tv2regionerne\StatamicCache\Cacher\Cacher(StaticCache::cacheStore(), $config);
         });
