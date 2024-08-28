@@ -21,6 +21,14 @@ class InvalidateModel implements ShouldBeUnique, ShouldQueue
     {
     }
 
+    public function tags(): array
+    {
+        return [
+            'url:'.$this->model->url,
+            'id:'.$this->model->id,
+        ];
+    }
+
     /**
      * Execute the job.
      */

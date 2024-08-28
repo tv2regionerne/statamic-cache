@@ -144,7 +144,8 @@ class Manager
                 foreach ($ids as $index => $id) {
                     $query->{($index == 0 ? 'where' : 'orWhere').'JsonContains'}('content', [$id]);
                 }
-            });
+            })
+            ->orderBy('url');
 
         // if we have enough models, just flush the cache
         if ($query->count() >= config('statamic-cache.flush_cache_limit', 1000)) {
