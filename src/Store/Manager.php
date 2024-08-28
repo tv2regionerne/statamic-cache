@@ -181,9 +181,9 @@ class Manager
         $manager = app()->make(StaticCacheManager::class);
         $cache = $manager->cacheStore();
 
-        [$url, $domain] = $this->splitUrlAndDomain($url);
+        [$uri, $domain] = $this->splitUrlAndDomain($url);
 
-        app(Cacher::class)->invalidateUrl($url, $domain);
+        app(Cacher::class)->invalidateUrl($uri, $domain);
         $cache->forget('static-cache:responses:'.md5($url));
     }
 
