@@ -22,7 +22,7 @@ it('it invalidates entry tags', function () {
 
     $this->assertCount(1, StaticCache::whereJsonContains('content', ['test:test'])->get());
 
-    $event = new stdClass();
+    $event = new stdClass;
     $event->entry = $entry;
 
     (new Subscriber)->invalidateEntry($event);
@@ -47,7 +47,7 @@ it('it invalidates asset tags', function () {
 
     $this->assertCount(1, StaticCache::whereJsonContains('content', ['asset:test::foo/image_in_short.jpg'])->get());
 
-    $event = new stdClass();
+    $event = new stdClass;
     $event->asset = $asset;
 
     (new Subscriber)->invalidateAsset($event);
@@ -68,7 +68,7 @@ it('it invalidates global tags', function () {
 
     $this->assertCount(1, StaticCache::whereJsonContains('content', ['global:test'])->get());
 
-    $event = new stdClass();
+    $event = new stdClass;
     $event->globals = $global;
 
     (new Subscriber)->invalidateGlobal($event);
@@ -89,7 +89,7 @@ it('it invalidates nav tags', function () {
 
     $this->assertCount(1, StaticCache::whereJsonContains('content', ['nav:test'])->get());
 
-    $event = new stdClass();
+    $event = new stdClass;
     $event->nav = $nav;
 
     (new Subscriber)->invalidateNav($event);
@@ -114,7 +114,7 @@ it('it invalidates term tags', function () {
 
     $this->assertCount(1, StaticCache::whereJsonContains('content', ['term:test::test'])->get());
 
-    $event = new stdClass();
+    $event = new stdClass;
     $event->term = $term;
 
     (new Subscriber)->invalidateTerm($event);

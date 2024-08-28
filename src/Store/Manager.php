@@ -128,7 +128,7 @@ class Manager
 
         $model = StaticCache::where('url', $url)->first();
 
-        return ($model && $model->content);
+        return $model && $model->content;
     }
 
     public function invalidateContent($ids): static
