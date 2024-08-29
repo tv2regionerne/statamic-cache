@@ -73,6 +73,10 @@ class AutoCache
 
     private function removeStaticCacheIfNoDataIsStored()
     {
+        if (!config('statamic-cache.split_brain_check', false)) {
+            return;
+        }
+
         if (Store::hasMappingData()) {
             return;
         }
