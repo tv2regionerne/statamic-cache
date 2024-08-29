@@ -7,7 +7,7 @@ use Statamic\StaticCaching\ResponseStatus;
 use Tv2regionerne\StatamicCache\Facades\Store;
 use Tv2regionerne\StatamicCache\Http\Middleware\AutoCache;
 
-it('it adds tracking data during the request lifecycle', function () {
+it('adds tracking data during the request lifecycle', function () {
     $this->assertFalse(Store::hasMappingData('/'));
 
     $request = Request::create('/');
@@ -24,7 +24,7 @@ it('it adds tracking data during the request lifecycle', function () {
     $this->assertTrue(Store::hasMappingData('/'));
 });
 
-it('it doesn\'t add tracking data when page is already cached', function () {
+it('doesn\'t add tracking data when page is already cached', function () {
     Store::addWatcher('default');
     Store::mergeTags(['some:thing']);
     Store::addKeyMappingData('default');
@@ -50,8 +50,10 @@ it('it doesn\'t add tracking data when page is already cached', function () {
     Store::shouldNotHaveReceived('addKeyMappingData');
 });
 
-it('it invalidates the cache when the store has no content', function () {
+it('invalidates the cache when the store has no content', function () {
     Store::spy();
+
+    \Illuminate\Support\Facades\Config::set('statamic-cache.split_brain_check', true);
 
     $this->assertFalse(Store::hasMappingData('/'));
 

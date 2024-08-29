@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Queue;
 use Tv2regionerne\StatamicCache\Facades\Store;
 use Tv2regionerne\StatamicCache\Models\StaticCache;
 
-it('it adds tracking data', function () {
+it('adds tracking data', function () {
     $this->assertCount(0, StaticCache::all());
     $this->assertFalse(Store::hasMappingData('/'));
 
@@ -20,7 +20,7 @@ it('it adds tracking data', function () {
     $this->assertTrue(Store::hasMappingData('/'));
 });
 
-it('it creates an invalidate model job when there is a valid tag', function () {
+it('creates an invalidate model job when there is a valid tag', function () {
     Queue::fake();
 
     Store::addWatcher('default');
@@ -32,7 +32,7 @@ it('it creates an invalidate model job when there is a valid tag', function () {
     Queue::assertPushed(Tv2regionerne\StatamicCache\Jobs\InvalidateModel::class);
 });
 
-it('it doesn\'t an invalidate model job when there is no valid tag', function () {
+it('doesn\'t an invalidate model job when there is no valid tag', function () {
     Queue::fake();
 
     Store::addWatcher('default');
@@ -44,7 +44,7 @@ it('it doesn\'t an invalidate model job when there is no valid tag', function ()
     Queue::assertNotPushed(Tv2regionerne\StatamicCache\Jobs\InvalidateModel::class);
 });
 
-it('it flushes the cache when over the config limit', function () {
+it('flushes the cache when over the config limit', function () {
     config()->set('statamic-cache.flush_cache_limit', 1);
     config()->set('statamic.static_caching.strategy', 'half');
     config()->set('statamic.static_caching.strategies.half.driver', 'redis_with_database');
