@@ -10,7 +10,7 @@ use Tv2regionerne\StatamicCache\Jobs\Invalidate;
 use Tv2regionerne\StatamicCache\Listeners\Subscriber;
 use Tv2regionerne\StatamicCache\Models\StaticCache;
 
-it('it invalidates entry tags', function () {
+it('invalidates entry tags', function () {
     Queue::fake();
 
     Facades\Collection::make('test')->save();
@@ -32,7 +32,7 @@ it('it invalidates entry tags', function () {
     });
 });
 
-it('it invalidates asset tags', function () {
+it('invalidates asset tags', function () {
     Queue::fake();
     Storage::fake('test');
 
@@ -57,7 +57,7 @@ it('it invalidates asset tags', function () {
     });
 });
 
-it('it invalidates global tags', function () {
+it('invalidates global tags', function () {
     Queue::fake();
 
     $global = tap(Facades\GlobalSet::make('test'))->save();
@@ -78,7 +78,7 @@ it('it invalidates global tags', function () {
     });
 });
 
-it('it invalidates nav tags', function () {
+it('invalidates nav tags', function () {
     Queue::fake();
 
     $nav = tap(Facades\Nav::make('test'))->save();
@@ -99,7 +99,7 @@ it('it invalidates nav tags', function () {
     });
 });
 
-it('it invalidates term tags', function () {
+it('invalidates term tags', function () {
     Queue::fake();
 
     Facades\Taxonomy::make('test')->save();

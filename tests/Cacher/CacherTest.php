@@ -12,7 +12,7 @@ beforeEach(function () {
     config()->set('statamic.static_caching.strategies.half.driver', 'redis_with_database');
 });
 
-it('it caches urls', function () {
+it('caches urls', function () {
     $this->assertCount(0, StaticCache::all());
 
     $this->get('/');
@@ -25,7 +25,7 @@ it('it caches urls', function () {
     $this->assertSame($model->domain, 'http://localhost');
 });
 
-it('it invalidates urls', function () {
+it('invalidates urls', function () {
     Event::fake();
 
     $this->get('/');
@@ -39,7 +39,7 @@ it('it invalidates urls', function () {
     $this->assertCount(0, StaticCache::all());
 });
 
-it('it invalidates wildcard urls', function () {
+it('invalidates wildcard urls', function () {
     Event::fake();
 
     StaticCache::insert([
@@ -69,7 +69,7 @@ it('it invalidates wildcard urls', function () {
     $this->assertCount(1, StaticCache::all());
 });
 
-it('it flushes the cache', function () {
+it('flushes the cache', function () {
     Event::fake();
 
     StaticCache::insert([
