@@ -91,3 +91,32 @@ it('flushes the cache', function () {
 
     $this->assertCount(0, StaticCache::all());
 });
+
+it('sets headers from config', function () {
+    config()->set('statamic-cache.headers', [
+        'hit' => [
+            'x-statamic-cache' => 'hit',
+            'cache.headers' => 'public;max_age=1628000;etag', // will pass to laravel's middleware
+        ],
+
+        'miss' => [
+            'x-statamic-cache' => 'miss',
+            'cache.headers' => 'public;max_age=2628000;etag', // will pass to laravel's middleware
+        ],
+
+        'not-available' => [
+            'x-statamic-cache' => 'not-available',
+            'cache.headers' => 'public;max_age=3628000;etag', // will pass to laravel's middleware
+        ],
+    ]);
+
+    $response = $this->get('/');
+
+    $this->assertSame($response->headers->get('cache-control'), 'max-age=2628000, no-cache, public');
+    $this->assertSame($response->headers->get('x-statamic-cache'), 'miss');
+
+    $response = $this->get('/');
+
+    $this->assertSame($response->headers->get('cache-control'), 'max-age=1628000, public');
+    $this->assertSame($response->headers->get('x-statamic-cache'), 'hit');
+});
