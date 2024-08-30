@@ -3,11 +3,13 @@
 namespace Tv2regionerne\StatamicCache\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\Middleware\SetCacheHeaders;
 use Illuminate\Http\Response;
 use Statamic\Contracts\Assets\Asset;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Contracts\Globals\Variables;
 use Statamic\Facades\URL;
+use Statamic\Support\Arr;
 use Statamic\Tags;
 use Statamic\Taxonomies\LocalizedTerm;
 use Tv2regionerne\StatamicCache\Facades\Store;
@@ -35,7 +37,7 @@ class AutoCache
         Store::removeWatcher($key);
 
         if (! is_callable([$response, 'wasStaticallyCached'])) {
-            $response->headers->add(['x-statamic-cache' => 'not-available']);
+            $response = $this->setHeadersFromConfig($response, 'not-available');
 
             $this->removeStaticCacheIfNoDataIsStored();
 
@@ -44,7 +46,7 @@ class AutoCache
 
         try {
             if ($response->wasStaticallyCached()) {
-                $response->headers->add(['x-statamic-cache' => 'hit']);
+                $response = $this->setHeadersFromConfig($response, 'hit');
 
                 $this->removeStaticCacheIfNoDataIsStored();
 
@@ -54,9 +56,26 @@ class AutoCache
 
         }
 
-        $response->headers->add(['x-statamic-cache' => 'miss']);
+        $response = $this->setHeadersFromConfig($response, 'miss');
 
         Store::addKeyMappingData($key);
+
+        return $response;
+    }
+
+    private function setHeadersFromConfig($response, string $type)
+    {
+        if (! $headers = config('statamic-cache.headers.'.$type, false)) {
+            return $response;
+        }
+
+        if ($options = Arr::pull($headers, 'cache.headers')) {
+            $response = (new SetCacheHeaders)->handle(request(), fn ($next) => $response, $options);
+        }
+
+        if ($headers = Arr::except($headers, ['cache.headers'])) {
+            $response->headers->add($headers);
+        }
 
         return $response;
     }
