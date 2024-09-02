@@ -2,6 +2,7 @@
 
 namespace Tv2regionerne\StatamicCache\Cacher;
 
+use Illuminate\Support\Facades\DB;
 use Statamic\Events\UrlInvalidated;
 use Statamic\StaticCaching\Cachers\ApplicationCacher;
 use Tv2regionerne\StatamicCache\Models\StaticCache;
@@ -64,8 +65,10 @@ class Cacher extends ApplicationCacher
 
     public function flush()
     {
-        StaticCache::query()->truncate();
+        DB::transaction(function () {
+            StaticCache::query()->truncate();
 
-        $this->cache->flush();
+            $this->cache->flush();
+        });
     }
 }
