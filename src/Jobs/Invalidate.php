@@ -17,7 +17,9 @@ class Invalidate implements ShouldBeUnique, ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public array $tags) {}
+    public function __construct(public array $tags)
+    {
+    }
 
     public function tags(): array
     {

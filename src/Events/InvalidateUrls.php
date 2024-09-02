@@ -6,5 +6,7 @@ use Statamic\Events\Event;
 
 class InvalidateUrls extends Event
 {
-    public function __construct(public $urls) {}
+    public function __construct(public $urls)
+    {
+    }
 }

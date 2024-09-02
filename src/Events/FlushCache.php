@@ -6,5 +6,7 @@ use Statamic\Events\Event;
 
 class FlushCache extends Event
 {
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 }
