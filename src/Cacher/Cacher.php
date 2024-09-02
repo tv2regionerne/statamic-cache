@@ -5,6 +5,8 @@ namespace Tv2regionerne\StatamicCache\Cacher;
 use Illuminate\Support\Facades\DB;
 use Statamic\Events\UrlInvalidated;
 use Statamic\StaticCaching\Cachers\ApplicationCacher;
+use Tv2regionerne\StatamicCache\Events\FlushCache;
+use Tv2regionerne\StatamicCache\Events\InvalidateUrls;
 use Tv2regionerne\StatamicCache\Models\StaticCache;
 
 class Cacher extends ApplicationCacher
@@ -50,6 +52,13 @@ class Cacher extends ApplicationCacher
         UrlInvalidated::dispatch($url, $domain);
     }
 
+    public function invalidateUrls($urls)
+    {
+        InvalidateUrls::dispatch($urls);
+
+        parent::invalidateUrls($urls);
+    }
+
     protected function invalidateWildcardUrl($wildcard)
     {
         // Remove the asterisk
@@ -69,6 +78,8 @@ class Cacher extends ApplicationCacher
             StaticCache::query()->truncate();
 
             $this->cache->flush();
+
+            FlushCache::dispatch();
         });
     }
 }
