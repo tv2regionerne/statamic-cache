@@ -5,6 +5,8 @@ uses(\Tv2regionerne\StatamicCache\Tests\TestCase::class);
 use Illuminate\Support\Facades\Event;
 use Statamic\Events\UrlInvalidated;
 use Statamic\StaticCaching\Cacher;
+use Tv2regionerne\StatamicCache\Events\FlushCache;
+use Tv2regionerne\StatamicCache\Events\InvalidateUrls;
 use Tv2regionerne\StatamicCache\Models\StaticCache;
 
 beforeEach(function () {
@@ -65,6 +67,7 @@ it('invalidates wildcard urls', function () {
     app(Cacher::class)->invalidateUrls(['/news*']);
 
     Event::assertDispatched(UrlInvalidated::class);
+    Event::assertDispatched(InvalidateUrls::class);
 
     $this->assertCount(1, StaticCache::all());
 });
@@ -90,6 +93,8 @@ it('flushes the cache', function () {
     app(Cacher::class)->flush();
 
     $this->assertCount(0, StaticCache::all());
+
+    Event::assertDispatched(FlushCache::class);
 });
 
 it('sets headers from config', function () {
