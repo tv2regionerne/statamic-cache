@@ -14,11 +14,14 @@ class Invalidate implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $uniqueFor = 1;
+
     /**
      * Create a new job instance.
      */
     public function __construct(public array $tags)
     {
+        asort($this->tags);
     }
 
     public function tags(): array

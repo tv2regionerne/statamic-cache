@@ -16,17 +16,17 @@ return [
     'headers' => [
         'hit' => [
             'x-statamic-cache' => 'hit',
-            //'cache.headers' => 'no-cache,private,max-age=1200;etag', // will pass to laravel's middleware
+            'cache.headers' => env('STATAMIC_AUTOCACHE_HIT_CACHE_HEADERS', null), // will pass to laravel's middleware
         ],
 
         'miss' => [
             'x-statamic-cache' => 'miss',
-            //'cache.headers' => 'no-cache,private,max-age=900;etag', // will pass to laravel's middleware
+            'cache.headers' => env('STATAMIC_AUTOCACHE_HIT_CACHE_HEADERS', null), // will pass to laravel's middleware
         ],
 
         'not-available' => [
             'x-statamic-cache' => 'not-available',
-            //'cache.headers' => 'no-cache,private,max-age=900;etag', // will pass to laravel's middleware
+            'cache.headers' => env('STATAMIC_AUTOCACHE_HIT_CACHE_HEADERS', null), // will pass to laravel's middleware
         ],
     ],
 

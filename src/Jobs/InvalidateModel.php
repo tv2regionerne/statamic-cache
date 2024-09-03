@@ -14,6 +14,8 @@ class InvalidateModel implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $uniqueFor = 1;
+
     /**
      * Create a new job instance.
      */

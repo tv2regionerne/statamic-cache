@@ -75,7 +75,7 @@ class Cacher extends ApplicationCacher
     public function flush()
     {
         DB::transaction(function () {
-            StaticCache::query()->truncate();
+            StaticCache::query()->delete();
 
             $this->cache->flush();
 
