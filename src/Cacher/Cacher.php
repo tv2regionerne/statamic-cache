@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Statamic\Events\UrlInvalidated;
 use Statamic\StaticCaching\Cachers\ApplicationCacher;
 use Tv2regionerne\StatamicCache\Events\FlushCache;
+use Tv2regionerne\StatamicCache\Events\InvalidateUrl;
 use Tv2regionerne\StatamicCache\Events\InvalidateUrls;
 use Tv2regionerne\StatamicCache\Models\StaticCache;
 
@@ -46,6 +47,7 @@ class Cacher extends ApplicationCacher
                 $model->delete();
             });
 
+        InvalidateUrl::dispatch($url);
         // if we dont have a db entry we should still clear the cache
         $this->cache->forget($this->normalizeKey('responses:'.$this->makeHash($domain.$url)));
 
@@ -54,7 +56,9 @@ class Cacher extends ApplicationCacher
 
     public function invalidateUrls($urls)
     {
-        InvalidateUrls::dispatch($urls);
+        if ($urls) {
+            InvalidateUrls::dispatch($urls);
+        }
 
         parent::invalidateUrls($urls);
     }
